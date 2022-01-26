@@ -16,12 +16,12 @@ on:
                 description: "Dockerfile path relative to context"
                 type: string
                 required: false
-#                default: "./tools/Dockerfile"
+                default: "./tools/Dockerfile"
             DOCKER_REGISTRY:
                 description: "Docker registry to push image"
                 type: string
                 required: false
-#                default: "docker-registry.trendagent.ru:5000"
+                default: "docker-registry.trendagent.ru:5000"
 #        outputs:
 #            IMAGE:
 #                description: "Docker image name"
@@ -35,7 +35,7 @@ on:
 #                required: true
 
 jobs:
-    vars:
+    variables:
         name: Prepare variables
         runs-on: ubuntu-latest
 #        outputs:
