@@ -1,0 +1,102 @@
+name: Build
+
+on:
+    workflow_call:
+        inputs:
+            APP_NAME:
+                type: string
+                required: true
+            APP_VERSION:
+                type: string
+                required: true
+            DOCKERFILE:
+                description: "Dockerfile path relative to context"
+                type: string
+                required: false
+        outputs:
+            IMAGE:
+                description: "Docker image name"
+                value: ${{ jobs.parse.outputs.output1 }}
+        secrets:
+            DOCKER_REGISTRY:
+                required: true
+            DOCKER_REGISTRY_USER:
+                required: true
+            DOCKER_REGISTRY_PASSWORD:
+                required: true
+            GPT_TOKEN:
+                required: true
+
+jobs:
+    build:
+        name: Build
+        runs-on: ubuntu-latest
+        permissions:
+            contents: read
+            packages: write
+
+        steps:
+            -   name: Checkout repository
+                uses: actions/checkout@v2
+
+            -   name: Set up Docker Buildx
+                uses: docker/setup-buildx-action@v1
+
+            -   name: Set Dockerfile path by default
+                id: dockerfile
+                run: |
+                    DOCKERFILE=${{ github.event.inputs.DOCKERFILE }}
+                    echo "::set-output name=path::${DOCKERFILE:-"./tools/Dockerfile"}"
+
+            -   name: Define image name
+                id: image
+                run: |
+                    echo "::set-output name=name::${{ secrets.DOCKER_REGISTRY }}/${{ inputs.APP_NAME }}:${{ inputs.APP_VERSION }}_${{ github.sha }}"
+
+            -   shell: bash
+                run: |
+                    echo ${{ steps.dockerfile.outputs.path }}
+                    echo ${{ steps.image.outputs.name }}
+
+            # Cache
+            -   name: Cache Docker layers
+                uses: actions/cache@v2
+                with:
+                    path: /tmp/.buildx-cache
+                    key: ${{ runner.os }}-buildx-${{ github.sha }}
+                    restore-keys: |
+                        ${{ runner.os }}-buildx-
+
+            # Login against a Docker registry except on PR
+            # https://github.com/docker/login-action
+            -   name: Log into Docker registry
+                if: ${{ github.event_name != 'pull_request' }}
+                uses: docker/login-action@v1
+                with:
+                    registry: ${{ secrets.DOCKER_REGISTRY }}
+                    username: ${{ secrets.DOCKER_REGISTRY_USER }}
+                    password: ${{ secrets.DOCKER_REGISTRY_PASSWORD }}
+
+            # Build and push Docker image with Buildx (don't push on PR)
+            # https://github.com/docker/build-push-action
+            -   name: Build and push
+                uses: docker/build-push-action@v2
+                with:
+                    context: .
+                    file: ${{ needs.dockerfile.outputs.path }}
+                    push: ${{ github.event_name != 'pull_request' }}
+                    tags: |
+                        ${{ secrets.DOCKER_REGISTRY }}/${{ inputs.APP_NAME }}:${{ github.sha }}
+                        ${{ secrets.DOCKER_REGISTRY }}/${{ inputs.APP_NAME }}:${{ inputs.APP_VERSION }}_${{ github.sha }}
+                    cache-from: type=local,src=/tmp/.buildx-cache
+                    cache-to: type=local,dest=/tmp/.buildx-cache-new,mode=max
+                    build-args: |
+                        "NPM_TOKEN=${{ secrets.GPT_TOKEN }}"
+
+            # Temp fix
+            # https://github.com/docker/build-push-action/issues/252
+            # https://github.com/moby/buildkit/issues/1896
+            -   name: Move cache
+                run: |
+                    rm -rf /tmp/.buildx-cache
+                    mv /tmp/.buildx-cache-new /tmp/.buildx-cache
