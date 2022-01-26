@@ -26,13 +26,13 @@ on:
 #            IMAGE:
 #                description: "Docker image name"
 #                value: ${{ jobs.vars.outputs.IMAGE }}
-        secrets:
-            DOCKER_REGISTRY_USER:
-                required: true
-            DOCKER_REGISTRY_PASSWORD:
-                required: true
-            GPT_TOKEN:
-                required: true
+#        secrets:
+#            DOCKER_REGISTRY_USER:
+#                required: true
+#            DOCKER_REGISTRY_PASSWORD:
+#                required: true
+#            GPT_TOKEN:
+#                required: true
 
 jobs:
     vars:
