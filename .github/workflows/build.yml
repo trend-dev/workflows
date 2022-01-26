@@ -51,14 +51,9 @@ jobs:
                     echo ${{ steps.image.outputs.NAME }}
 
     build:
-        needs: vars
-        if: inputs.BUILD == 'true'
         name: Build
+        needs: vars
         runs-on: ubuntu-latest
-        permissions:
-            contents: read
-            packages: write
-
         steps:
             -   name: Checkout repository
                 uses: actions/checkout@v2
