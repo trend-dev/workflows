@@ -35,6 +35,17 @@ on:
                 required: true
 
 jobs:
+    check:
+        name: Check
+        runs-on: ubuntu-latest
+        steps:
+            -   shell: bash
+                run: |
+                    echo ${{ inputs.DOCKER_REGISTRY }}
+                    echo ${{ inputs.APP_NAME }}
+                    echo ${{ inputs.APP_VERSION }}
+                    echo ${{ github.sha }}
+
     vars:
         name: Prepare variables
         runs-on: ubuntu-latest
