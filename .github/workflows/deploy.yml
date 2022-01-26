@@ -12,6 +12,7 @@ on:
             CONFIG:
                 type: string
                 required: false
+                default: "./tools/kube-config.yaml"
         secrets:
             DEV_KUBE_CONFIG:
                 required: true
@@ -29,12 +30,6 @@ jobs:
             -   shell: bash
                 run: |
                     echo ${{ inputs.IMAGE }}
-
-            -   name: Set defaults
-                id: deployment
-                run: |
-                    CONFIG=${{ github.event.inputs.CONFIG }}
-                    echo "::set-output name=PATH::${CONFIG:-"./tools/kube-config.yaml"}"
 
             # Заменяем {{image}} на имя образа в yaml-файле развёртывания.
             -   name: Configuring Image in yaml file
