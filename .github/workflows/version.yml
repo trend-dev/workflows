@@ -5,10 +5,10 @@ on:
         # Map the workflow outputs to job outputs
         outputs:
             APP_NAME:
-                description: "application name"
+                description: "Application name"
                 value: ${{ jobs.parse.outputs.output1 }}
             APP_VERSION:
-                description: "application version"
+                description: "Application version"
                 value: ${{ jobs.parse.outputs.output2 }}
 
 jobs:

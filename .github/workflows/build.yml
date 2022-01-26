@@ -9,14 +9,21 @@ on:
             APP_VERSION:
                 type: string
                 required: true
+            BUILD:
+                type: boolean
+                required: false
             DOCKERFILE:
                 description: "Dockerfile path relative to context"
+                type: string
+                required: false
+            DOCKER_REGISTRY:
+                description: "Docker registry to push image"
                 type: string
                 required: false
         outputs:
             IMAGE:
                 description: "Docker image name"
-                value: ${{ jobs.parse.outputs.output1 }}
+                value: ${{ jobs.vars.outputs.IMAGE }}
         secrets:
             DOCKER_REGISTRY:
                 required: true
@@ -28,7 +35,35 @@ on:
                 required: true
 
 jobs:
+    vars:
+        name: Prepare variables
+        runs-on: ubuntu-latest
+        outputs:
+            DOCKERFILE: ${{ steps.docker.outputs.DOCKERFILE }}
+            DOCKER_REGISTRY: ${{ steps.docker.outputs.DOCKER_REGISTRY }}
+            IMAGE: ${{ steps.image.outputs.NAME }}
+        steps:
+            -   name: Set defaults
+                id: docker
+                run: |
+                    DOCKERFILE=${{ github.event.inputs.DOCKERFILE }}
+                    echo "::set-output name=DOCKERFILE::${DOCKERFILE:-"./tools/Dockerfile"}"
+                    DOCKER_REGISTRY=${{ github.event.inputs.DOCKER_REGISTRY }}
+                    echo "::set-output name=DOCKER_REGISTRY::${DOCKER_REGISTRY:-"docker-registry.trendagent.ru:5000"}"
+
+            -   name: Define image name
+                id: image
+                run: |
+                    echo "::set-output name=NAME::${{ steps.docker.DOCKER_REGISTRY }}/${{ inputs.APP_NAME }}:${{ inputs.APP_VERSION }}_${{ github.sha }}"
+
+            -   shell: bash
+                run: |
+                    echo ${{ steps.docker.outputs.DOCKERFILE }}
+                    echo ${{ steps.image.outputs.NAME }}
+
     build:
+        needs: vars
+        if: github.event.inputs.BUILD == 'true'
         name: Build
         runs-on: ubuntu-latest
         permissions:
@@ -41,22 +76,6 @@ jobs:
 
             -   name: Set up Docker Buildx
                 uses: docker/setup-buildx-action@v1
-
-            -   name: Set Dockerfile path by default
-                id: dockerfile
-                run: |
-                    DOCKERFILE=${{ github.event.inputs.DOCKERFILE }}
-                    echo "::set-output name=path::${DOCKERFILE:-"./tools/Dockerfile"}"
-
-            -   name: Define image name
-                id: image
-                run: |
-                    echo "::set-output name=name::${{ secrets.DOCKER_REGISTRY }}/${{ inputs.APP_NAME }}:${{ inputs.APP_VERSION }}_${{ github.sha }}"
-
-            -   shell: bash
-                run: |
-                    echo ${{ steps.dockerfile.outputs.path }}
-                    echo ${{ steps.image.outputs.name }}
 
             # Cache
             -   name: Cache Docker layers
@@ -83,11 +102,11 @@ jobs:
                 uses: docker/build-push-action@v2
                 with:
                     context: .
-                    file: ${{ steps.dockerfile.outputs.path }}
+                    file: ${{ needs.vars.outputs.DOCKERFILE }}
                     push: ${{ github.event_name != 'pull_request' }}
                     tags: |
-                        ${{ secrets.DOCKER_REGISTRY }}/${{ inputs.APP_NAME }}:${{ github.sha }}
-                        ${{ secrets.DOCKER_REGISTRY }}/${{ inputs.APP_NAME }}:${{ inputs.APP_VERSION }}_${{ github.sha }}
+                        ${{ needs.vars.outputs.DOCKER_REGISTRY }}/${{ inputs.APP_NAME }}:${{ github.sha }}
+                        ${{ needs.vars.outputs.IMAGE }}
                     cache-from: type=local,src=/tmp/.buildx-cache
                     cache-to: type=local,dest=/tmp/.buildx-cache-new,mode=max
                     build-args: |
