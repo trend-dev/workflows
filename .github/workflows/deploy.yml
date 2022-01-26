@@ -34,12 +34,12 @@ jobs:
             # Заменяем {{image}} на имя образа в yaml-файле развёртывания.
             -   name: Configuring Image in yaml file
                 shell: bash
-                run: sed -i 's|{{image}}|${{ inputs.IMAGE }}|g' ${{ steps.deployment.outputs.PATH }}
+                run: sed -i 's|{{image}}|${{ inputs.IMAGE }}|g' ${{ inputs.CONFIG }}
 
             # Заменяем {{domain}} на имя окружения в yaml-файле развёртывания.
             -   name: Configuring Namespace in yaml file
                 shell: bash
-                run: sed -i 's|{{domain}}|${{ inputs.LOCATION }}|g' ${{ steps.deployment.outputs.PATH }}
+                run: sed -i 's|{{domain}}|${{ inputs.LOCATION }}|g' ${{ inputs.CONFIG }}
 
             # Отправляем yaml-файл развёртывания в Kubernetes кластер
             -   name: Deploy to Kubernetes
@@ -47,4 +47,4 @@ jobs:
                 env:
                     KUBE_CONFIG: ${{ secrets.DEV_KUBE_CONFIG }}
                 with:
-                    args: -n ${{ inputs.LOCATION }} apply -f ${{ steps.deployment.outputs.PATH }}
+                    args: -n ${{ inputs.LOCATION }} apply -f ${{ inputs.CONFIG }}
