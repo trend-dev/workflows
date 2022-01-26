@@ -9,9 +9,9 @@ on:
             APP_VERSION:
                 type: string
                 required: true
-#            BUILD:
-#                type: boolean
-#                required: false
+            BUILD:
+                type: boolean
+                required: false
 #            DOCKERFILE:
 #                description: "Dockerfile path relative to context"
 #                type: string
