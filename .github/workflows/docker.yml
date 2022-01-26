@@ -44,7 +44,7 @@ jobs:
             -   shell: bash
                 run: |
                     echo HI
-                    echo {{ inputs.BUILD }}
+                    echo ${{ inputs.BUILD }}
 #                    echo ${{ inputs.DOCKER_REGISTRY }}
 #                    echo ${{ inputs.APP_NAME }}
 #                    echo ${{ inputs.APP_VERSION }}
