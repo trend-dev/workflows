@@ -1,27 +1,27 @@
-name: Build
+name: Docker
 
 on:
     workflow_call:
-        inputs:
-            APP_NAME:
-                type: string
-                required: true
-            APP_VERSION:
-                type: string
-                required: true
-            BUILD:
-                type: boolean
-                required: false
-            DOCKERFILE:
-                description: "Dockerfile path relative to context"
-                type: string
-                required: false
-                default: "./tools/Dockerfile"
-            DOCKER_REGISTRY:
-                description: "Docker registry to push image"
-                type: string
-                required: false
-                default: "docker-registry.trendagent.ru:5000"
+#        inputs:
+#            APP_NAME:
+#                type: string
+#                required: true
+#            APP_VERSION:
+#                type: string
+#                required: true
+#            BUILD:
+#                type: boolean
+#                required: false
+#            DOCKERFILE:
+#                description: "Dockerfile path relative to context"
+#                type: string
+#                required: false
+#                default: "./tools/Dockerfile"
+#            DOCKER_REGISTRY:
+#                description: "Docker registry to push image"
+#                type: string
+#                required: false
+#                default: "docker-registry.trendagent.ru:5000"
 #        outputs:
 #            IMAGE:
 #                description: "Docker image name"
@@ -43,10 +43,11 @@ jobs:
         steps:
             -   shell: bash
                 run: |
-                    echo ${{ inputs.DOCKER_REGISTRY }}
-                    echo ${{ inputs.APP_NAME }}
-                    echo ${{ inputs.APP_VERSION }}
-                    echo ${{ github.sha }}
+                    echo HI
+#                    echo ${{ inputs.DOCKER_REGISTRY }}
+#                    echo ${{ inputs.APP_NAME }}
+#                    echo ${{ inputs.APP_VERSION }}
+#                    echo ${{ github.sha }}
 #            -   id: image
 #                run: echo "::set-output name=NAME::${{ inputs.DOCKER_REGISTRY }}/${{ inputs.APP_NAME }}:${{ inputs.APP_VERSION }}_${{ github.sha }}"
 #            -   shell: bash
