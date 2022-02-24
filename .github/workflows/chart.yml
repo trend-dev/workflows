@@ -19,7 +19,7 @@ on:
                 required: true
 
 jobs:
-    release:
+    chart:
         runs-on: ubuntu-latest
         steps:
             -   name: Checkout
