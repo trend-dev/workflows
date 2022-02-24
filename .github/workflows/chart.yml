@@ -53,5 +53,5 @@ jobs:
                     helm repo add trend http://trend-dev.ru:5000 --password ${{ secrets.CHART_PASS }} --username ${{ secrets.CHART_USER }}
                     helm template ./
                     helm plugin install https://github.com/chartmuseum/helm-push
-                    helm cm-push ./ trend
+                    helm cm-push -f ./ trend
 #                    helm push tr-trendrealty-api-5.27.10-hands.tgz oci://trend-dev.ru:5000/helm-charts
