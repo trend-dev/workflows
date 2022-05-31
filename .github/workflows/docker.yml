@@ -38,7 +38,7 @@ on:
 jobs:
     variables:
         name: Prepare variables
-        runs-on: ubuntu-latest
+        runs-on: self-hosted
         outputs:
             IMAGE: ${{ steps.image.outputs.NAME }}
         steps:
@@ -51,7 +51,7 @@ jobs:
     build:
         if: inputs.BUILD == 'true'
         name: Build & push docker image
-        runs-on: ubuntu-latest
+        runs-on: self-hosted
         needs: variables
         steps:
             -   name: Checkout repository
