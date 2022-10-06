@@ -1,0 +1,77 @@
+name: TA Parsers Release Charts
+
+on:
+    workflow_call:
+        inputs:
+            APP_NAME:
+                type: string
+                required: false
+                default: ''
+            APP_VERSION:
+                type: string
+                required: false
+                default: ''
+            LOCATION:
+                type: string
+                required: true
+        secrets:
+            DEV_KUBE_CONFIG:
+                required: true
+            TOKEN:
+                required: true
+
+jobs:
+    release:
+        runs-on: ubuntu-latest
+        steps:
+            -   name: Checkout
+                uses: actions/checkout@v2
+                with:
+                    repository: trend-dev/ta-system
+                    ref: ${{ github.event.inputs.LOCATION }}
+                    fetch-depth: 0
+
+            -   name: Check
+                run: |
+                    echo ${{ inputs.APP_NAME }}
+                    echo ${{ inputs.APP_VERSION }}
+
+            -   name: Configure Git
+                run: |
+                    git config user.name "$GITHUB_ACTOR"
+                    git config user.email "$GITHUB_ACTOR@users.noreply.github.com"
+
+            -   name: Install Helm
+                uses: azure/setup-helm@v1
+                with:
+                    version: v3.7.1
+
+            -   name: Prepare propertyPath
+                id: path
+                run: echo "::set-output name=VALUE::$.dependencies[?(@.name=='${{ inputs.APP_NAME }}')].version"
+
+            -   name: Add Kube config
+                shell: bash
+                run: |
+                    mkdir ~/.kube
+                    echo ${{ secrets.DEV_KUBE_CONFIG }} | base64 -d > ~/.kube/config
+
+            -   name: Update Image Version in the related HelmChart values.yaml
+                if: inputs.APP_VERSION != ''
+                uses: fjogeleit/yaml-update-action@master
+                with:
+                    valueFile: 'charts/ta-system/Chart.yaml'
+                    propertyPath: ${{ steps.path.outputs.VALUE }}
+                    value: ${{ inputs.APP_VERSION }}
+                    branch: ${{ inputs.LOCATION }}
+                    message: Update ${{ inputs.APP_NAME }}
+                    updateFile: true
+                    repository: trend-dev/ta-system
+                    token: ${{ secrets.TOKEN }}
+
+            -   name: Upgrade
+                shell: bash
+                run: |
+                    cd ./charts/ta-system/
+                    helm dependency build ./
+                    helm upgrade ta-system --install --namespace ${{ inputs.LOCATION }} ./
