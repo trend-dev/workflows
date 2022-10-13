@@ -12,6 +12,9 @@ on:
             CHART_FOLDER:
                 type: string
                 required: true
+            APP_SYSTEM:
+                type: string
+                required: true
             DOCKER_REGISTRY:
                 description: "Docker registry for helm chart"
                 type: string
@@ -27,24 +30,16 @@ jobs:
     chart:
         runs-on: self-hosted
         steps:
-#            -   name: Configure git to trust the workspace despite the different owner
-#                run:
-#                    git config --global --add safe.directory "$GITHUB_WORKSPACE"
-
             -   name: Checkout
                 uses: actions/checkout@v3
                 with:
+                    repository: trend-dev/
                     fetch-depth: 0
 
             -   name: Install Helm
                 uses: azure/setup-helm@v1.1
                 with:
                     version: v3.8.0
-
-#            -   name: Configure Git
-#                run: |
-#                    git config user.name "$GITHUB_ACTOR"
-#                    git config user.email "$GITHUB_ACTOR@users.noreply.github.com"
 
             -   name: Log into Docker registry
                 uses: docker/login-action@v1
