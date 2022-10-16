@@ -42,6 +42,7 @@ jobs:
                 run: |
                     echo ${{ inputs.APP_NAME }}
                     echo ${{ inputs.APP_VERSION }}
+                    echo ${{ inputs.APP_SYSTEM }}
 
             -   name: Configure Git
                 run: |
@@ -49,9 +50,9 @@ jobs:
                     git config user.email "$GITHUB_ACTOR@users.noreply.github.com"
 
             -   name: Install Helm
-                uses: azure/setup-helm@v1
+                uses: azure/setup-helm@v3
                 with:
-                    version: v3.7.1
+                    version: v3.8.0
 
             -   name: Prepare propertyPath
                 id: path
@@ -71,7 +72,7 @@ jobs:
                     propertyPath: ${{ steps.path.outputs.VALUE }}
                     value: ${{ inputs.APP_VERSION }}
                     branch: ${{ inputs.LOCATION }}
-                    message: Update ${{ inputs.APP_NAME }}
+                    message: Update ${{ inputs.APP_NAME }} in ${{ inputs.APP_SYSTEM }}
                     updateFile: true
 #                    masterBranchName: main
 #                    targetBranch: ${{ inputs.LOCATION }}
