@@ -67,15 +67,15 @@ jobs:
                 if: inputs.APP_VERSION != ''
                 uses: fjogeleit/yaml-update-action@main
                 with:
-                    valueFile: 'charts/ta-parsers-helm/Chart.yaml'
+                    valueFile: 'charts/${{ inputs.APP_SYSTEM }}/Chart.yaml'
                     propertyPath: ${{ steps.path.outputs.VALUE }}
                     value: ${{ inputs.APP_VERSION }}
                     branch: ${{ inputs.LOCATION }}
                     message: Update ${{ inputs.APP_NAME }}
                     updateFile: true
-                    masterBranchName: main
-                    targetBranch: ${{ inputs.LOCATION }}
-                    repository: trend-dev/ta-parsers-helm
+#                    masterBranchName: main
+#                    targetBranch: ${{ inputs.LOCATION }}
+                    repository: trend-dev/${{ inputs.APP_SYSTEM }}
                     token: ${{ secrets.TOKEN }}
 
             -   name: Upgrade
