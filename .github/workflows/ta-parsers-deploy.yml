@@ -65,7 +65,7 @@ jobs:
 
             -   name: Update Image Version in the related HelmChart values.yaml
                 if: inputs.APP_VERSION != ''
-                uses: fjogeleit/yaml-update-action@master
+                uses: fjogeleit/yaml-update-action@main
                 with:
                     valueFile: 'charts/ta-parsers-helm/Chart.yaml'
                     propertyPath: ${{ steps.path.outputs.VALUE }}
