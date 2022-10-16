@@ -81,6 +81,9 @@ jobs:
 
             -   name: Upgrade
                 shell: bash
+                env:
+                    DOCKER_REGISTRY_USER: ${{ secrets.DOCKER_REGISTRY_USER }}
+                    DOCKER_REGISTRY_PASSWORD: ${{ secrets.DOCKER_REGISTRY_PASSWORD }}
                 run: |
                     cd ./charts/${{ inputs.APP_SYSTEM }}/
                     helm dependency build ./
