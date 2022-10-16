@@ -73,6 +73,8 @@ jobs:
                     branch: ${{ inputs.LOCATION }}
                     message: Update ${{ inputs.APP_NAME }}
                     updateFile: true
+                    masterBranchName: main
+                    targetBranch: ${{ inputs.LOCATION }}
                     repository: trend-dev/ta-parsers-helm
                     token: ${{ secrets.TOKEN }}
 
