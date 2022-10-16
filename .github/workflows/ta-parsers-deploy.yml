@@ -52,7 +52,7 @@ jobs:
             -   name: Install Helm
                 uses: azure/setup-helm@v3
                 with:
-                    version: v3.7.1
+                    version: v3.8.0
 
             -   name: Prepare propertyPath
                 id: path
