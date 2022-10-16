@@ -74,17 +74,13 @@ jobs:
                     branch: ${{ inputs.LOCATION }}
                     message: Update ${{ inputs.APP_NAME }} in ${{ inputs.APP_SYSTEM }}
                     updateFile: true
-#                    masterBranchName: main
-#                    targetBranch: ${{ inputs.LOCATION }}
                     repository: trend-dev/${{ inputs.APP_SYSTEM }}
                     token: ${{ secrets.TOKEN }}
 
             -   name: Upgrade
                 shell: bash
-                env:
-                    DOCKER_REGISTRY_USER: ${{ secrets.DOCKER_REGISTRY_USER }}
-                    DOCKER_REGISTRY_PASSWORD: ${{ secrets.DOCKER_REGISTRY_PASSWORD }}
                 run: |
+                    helm registry login --username='${{ secrets.DOCKER_REGISTRY_USER }}' --password='${{ secrets.DOCKER_REGISTRY_PASSWORD }}'
                     cd ./charts/${{ inputs.APP_SYSTEM }}/
                     helm dependency build ./
                     helm upgrade ${{ inputs.APP_SYSTEM }} --install --namespace ${{ inputs.LOCATION }} ./
