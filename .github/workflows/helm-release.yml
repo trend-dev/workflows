@@ -1,4 +1,4 @@
-name: TA Parsers Release Charts
+name: Helm Release
 
 on:
     workflow_call:
