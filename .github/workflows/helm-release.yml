@@ -42,7 +42,6 @@ jobs:
                     repository: trend-dev/${{ inputs.APP_SYSTEM }}
                     ref: ${{ github.event.inputs.LOCATION }}
                     fetch-depth: 0
-                    token: ${{ secrets.GPT_TOKEN }}
 
             -   name: Check
                 run: |
