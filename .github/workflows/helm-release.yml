@@ -62,7 +62,6 @@ jobs:
 
             -   name: Prepare propertyPath
                 id: path
-#                run: echo "::set-output name=VALUE::$.dependencies[?(@.name=='${{ inputs.APP_NAME }}')].version"
                 run: echo "VALUE=$.dependencies[?(@.name=='${{ inputs.APP_NAME }}')].version" >> $GITHUB_OUTPUT
 
             -   name: Add Kube config
