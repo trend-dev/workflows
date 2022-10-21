@@ -44,7 +44,7 @@ jobs:
         steps:
             -   id: image
 #                run: echo "::set-output name=NAME::${{ inputs.DOCKER_REGISTRY }}/${{ inputs.APP_NAME }}:${{ inputs.APP_VERSION }}-${{ github.sha }}"
-                run: echo "NAME={${{ inputs.DOCKER_REGISTRY }}/${{ inputs.APP_NAME }}:${{ inputs.APP_VERSION }}-${{ github.sha }}}" >> $GITHUB_OUTPUT
+                run: echo "{NAME}={${{ inputs.DOCKER_REGISTRY }}/${{ inputs.APP_NAME }}:${{ inputs.APP_VERSION }}-${{ github.sha }}}" >> $GITHUB_OUTPUT
             -   shell: bash
                 run: |
                     echo ${{ steps.image.outputs.NAME }}
