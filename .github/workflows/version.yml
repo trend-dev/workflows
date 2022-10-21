@@ -31,6 +31,6 @@ jobs:
 #            -   shell: bash
 #                run: |
             -   name: get name
-                    echo ${{ steps.step1.outputs.name }}
+                run: echo ${{ steps.step1.outputs.name }}
             -   name: get version
-                    echo ${{ steps.step2.outputs.version }}
+                run: echo ${{ steps.step2.outputs.version }}
