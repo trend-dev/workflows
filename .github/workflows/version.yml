@@ -24,10 +24,10 @@ jobs:
                 uses: actions/checkout@v3
             -   id: step1
 #                run: echo "::set-output name=name::$(awk -F "\"" '/name/{print $4; exit}' ./package.json)"
-                run: echo "{name}={$`(awk -F "\"" '/name/{print $4; exit}' ./package.json)`}" >> $GITHUB_OUTPUT
+                run: echo "{name}=${(awk -F "\"" '/name/{print $4; exit}' ./package.json)}" >> $GITHUB_OUTPUT
             -   id: step2
 #                run: echo "::set-output name=version::$(awk -F "\"" '/version/{print $4; exit}' ./package.json)"
-                run: echo "{version}={$`(awk -F "\"" '/version/{print $4; exit}' ./package.json)`}" >> $GITHUB_OUTPUT
+                run: echo "{version}=${(awk -F "\"" '/version/{print $4; exit}' ./package.json)}" >> $GITHUB_OUTPUT
             -   shell: bash
                 run: |
                     echo ${{ steps.step1.outputs.name }}
