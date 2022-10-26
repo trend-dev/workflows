@@ -79,7 +79,7 @@ jobs:
                     value: ${{ inputs.APP_VERSION }}
                     branch: ${{ inputs.LOCATION }}
                     message: Update ${{ inputs.APP_NAME }} in ${{ inputs.APP_SYSTEM }}
-                    updateFile: false
+                    updateFile: true
                     repository: trend-dev/${{ inputs.APP_SYSTEM }}
                     token: ${{ secrets.TOKEN }}
 
