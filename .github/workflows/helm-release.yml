@@ -111,7 +111,7 @@ jobs:
                     helm dependency build ./
                     helm upgrade ${{ inputs.APP_SYSTEM }} --install --namespace pre-prod ./
 
-            -   name: Delete kube config
+            -   name: Clear artifacts
                 shell: bash
                 run: |
-                    rm -f ~/.kube/config
+                    rm -rf ~/.kube
