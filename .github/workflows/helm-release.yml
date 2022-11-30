@@ -70,7 +70,7 @@ jobs:
                 if: ${{ github.event.inputs.LOCATION != 'pre-prod' }}
                 shell: bash
                 run: |
-                    mkdir ~/.kube
+                    mkdir -p ~/.kube
                     echo ${{ secrets.DEV_KUBE_CONFIG }} | base64 -d > ~/.kube/config
 
             -   name: Add TR-PRO Kube config
