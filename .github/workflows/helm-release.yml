@@ -67,14 +67,14 @@ jobs:
                 run: echo "VALUE=$.dependencies[?(@.name=='${{ inputs.APP_NAME }}')].version" >> $GITHUB_OUTPUT
 
             -   name: Add DEV Kube config
-                if: ${{ github.inputs.LOCATION != 'pre-prod' }}
+                if: ${{ github.event.inputs.LOCATION != 'pre-prod' }}
                 shell: bash
                 run: |
                     mkdir ~/.kube
                     echo ${{ secrets.DEV_KUBE_CONFIG }} | base64 -d > ~/.kube/config
 
             -   name: Add TR-PRO Kube config
-                if: ${{ github.inputs.LOCATION == 'pre-prod' }}
+                if: ${{ github.event.inputs.LOCATION == 'pre-prod' }}
                 shell: bash
                 run: |
                     mkdir ~/.kube
@@ -94,7 +94,7 @@ jobs:
                     token: ${{ secrets.TOKEN }}
 
             -   name: Upgrade Dev
-                if: ${{ github.inputs.LOCATION != 'pre-prod' }}
+                if: ${{ github.event.inputs.LOCATION != 'pre-prod' }}
                 shell: bash
                 run: |
                     helm registry login -u ${{ secrets.DOCKER_REGISTRY_USER }} -p ${{ secrets.DOCKER_REGISTRY_PASSWORD }} ${{ inputs.DOCKER_REGISTRY }}
@@ -103,7 +103,7 @@ jobs:
                     helm upgrade ${{ inputs.APP_SYSTEM }} --install --namespace ${{ inputs.LOCATION }} ./
 
             -   name: Upgrade pre-prod
-                if: ${{ github.inputs.LOCATION == 'pre-prod' }}
+                if: ${{ github.event.inputs.LOCATION == 'pre-prod' }}
                 shell: bash
                 run: |
                     helm registry login -u ${{ secrets.DOCKER_REGISTRY_USER }} -p ${{ secrets.DOCKER_REGISTRY_PASSWORD }} ${{ inputs.DOCKER_REGISTRY }}
