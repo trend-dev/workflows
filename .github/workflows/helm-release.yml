@@ -24,7 +24,7 @@ on:
                 default: "docker-registry.trendagent.ru:5000"
         secrets:
             DEV_KUBE_CONFIG:
-                required: true
+                required: false
             TOKEN:
                 required: true
             DOCKER_REGISTRY_USER:
