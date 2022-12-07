@@ -14,7 +14,7 @@ on:
 jobs:
     parse:
         name: Get version
-        runs-on: [self-hosted, linux]
+        runs-on: [self-hosted, Linux]
         # Map the job outputs to step outputs
         outputs:
             output1: ${{ steps.step1.outputs.name }}
