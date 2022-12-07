@@ -9,7 +9,7 @@ on:
 jobs:
     slackNotification:
         name: Slack Notification
-        runs-on: self-hosted
+        runs-on: [self-hosted, linux]
         steps:
             -   name: Inject slug/short variables
                 uses: rlespinasse/github-slug-action@v4

@@ -25,7 +25,7 @@ on:
 
 jobs:
     chart:
-        runs-on: self-hosted
+        runs-on: [self-hosted, linux]
         steps:
 #            -   name: Configure git to trust the workspace despite the different owner
 #                run:
