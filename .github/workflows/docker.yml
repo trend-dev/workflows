@@ -38,7 +38,7 @@ on:
 jobs:
     variables:
         name: Prepare variables
-        runs-on: [self-hosted, Linux]
+        runs-on: [self-hosted, docker-runner]
         outputs:
             IMAGE: ${{ steps.image.outputs.NAME }}
         steps:
@@ -50,7 +50,7 @@ jobs:
     build:
         if: inputs.BUILD == 'true'
         name: Build & push docker image
-        runs-on: [self-hosted, Linux]
+        runs-on: [self-hosted, docker-runner]
         needs: variables
         steps:
             -   name: Checkout repository

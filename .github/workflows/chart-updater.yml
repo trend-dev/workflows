@@ -28,7 +28,7 @@ on:
 
 jobs:
     chart:
-        runs-on: [self-hosted, Linux]
+        runs-on: [self-hosted, docker-runner]
         steps:
             -   name: Checkout
                 uses: actions/checkout@v3
