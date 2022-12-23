@@ -61,9 +61,11 @@ jobs:
             -   name: Publish chart
                 shell: bash
                 run: |
+                    ls -lah ${{ inputs.CHART_FOLDER }}/
                     cat ${{ inputs.CHART_FOLDER }}/Chart.yaml
-                    cd ${{ inputs.CHART_FOLDER }}
-                    helm registry login -u ${{ secrets.DOCKER_REGISTRY_USER }} -p ${{ secrets.DOCKER_REGISTRY_PASSWORD }} ${{ inputs.DOCKER_REGISTRY }}
-                    helm package ./
+                    cat ${{ inputs.CHART_FOLDER }}/vslues.yaml
+#                    cd ${{ inputs.CHART_FOLDER }}
+#                    helm registry login -u ${{ secrets.DOCKER_REGISTRY_USER }} -p ${{ secrets.DOCKER_REGISTRY_PASSWORD }} ${{ inputs.DOCKER_REGISTRY }}
+#                    helm package ./
 #                    helm push ${{ inputs.APP_NAME }}-${{ inputs.APP_VERSION }}.tgz oci://${{ inputs.DOCKER_REGISTRY }}/helm-charts
 
