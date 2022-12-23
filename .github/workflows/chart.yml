@@ -56,13 +56,12 @@ jobs:
                 with:
                     input: ${{ inputs.CHART_FOLDER }}/Chart.yaml
                     output: ${{ inputs.CHART_FOLDER }}/Chart.yaml
-                run: |
-                    cat ${{ inputs.CHART_FOLDER }}/Chart.yaml
                     
 
             -   name: Publish chart
                 shell: bash
                 run: |
+                    cat ${{ inputs.CHART_FOLDER }}/Chart.yaml
                     cd ${{ inputs.CHART_FOLDER }}
                     helm registry login -u ${{ secrets.DOCKER_REGISTRY_USER }} -p ${{ secrets.DOCKER_REGISTRY_PASSWORD }} ${{ inputs.DOCKER_REGISTRY }}
                     helm package ./
