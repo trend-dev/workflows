@@ -64,6 +64,6 @@ jobs:
                     cat ${{ inputs.CHART_FOLDER }}/Chart.yaml
                     cd ${{ inputs.CHART_FOLDER }}
                     helm registry login -u ${{ secrets.DOCKER_REGISTRY_USER }} -p ${{ secrets.DOCKER_REGISTRY_PASSWORD }} ${{ inputs.DOCKER_REGISTRY }}
-                    helm package ./
+#                    helm package ./
 #                    helm push ${{ inputs.APP_NAME }}-${{ inputs.APP_VERSION }}.tgz oci://${{ inputs.DOCKER_REGISTRY }}/helm-charts
 
