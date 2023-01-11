@@ -1,50 +1,50 @@
 name: Deploy
 
 on:
-    workflow_call:
-        inputs:
-            IMAGE:
-                type: string
-                required: true
-            LOCATION:
-                type: string
-                required: true
-            CONFIG:
-                type: string
-                required: false
-                default: "./tools/kube-config.yaml"
-        secrets:
-            DEV_KUBE_CONFIG:
-                required: true
+  workflow_call:
+    inputs:
+      IMAGE:
+        type: string
+        required: true
+      LOCATION:
+        type: string
+        required: true
+      CONFIG:
+        type: string
+        required: false
+        default: "./tools/kube-config.yaml"
+    secrets:
+      DEV_KUBE_CONFIG:
+        required: true
 
 jobs:
-    deploy:
-        name: Deploy
-        runs-on: [self-hosted, docker-runner]
-        permissions:
-            contents: write
-            packages: write
-        steps:
-            -   name: Checkout repository
-                uses: actions/checkout@v3
-            -   shell: bash
-                run: |
-                    echo ${{ inputs.IMAGE }}
+  deploy:
+    name: Deploy
+    runs-on: [ self-hosted, docker-runner ]
+    permissions:
+      contents: write
+      packages: write
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+      - shell: bash
+        run: |
+          echo ${{ inputs.IMAGE }}
 
-            # Заменяем {{image}} на имя образа в yaml-файле развёртывания.
-            -   name: Configuring Image in yaml file
-                shell: bash
-                run: sed -i 's|{{image}}|${{ inputs.IMAGE }}|g' ${{ inputs.CONFIG }}
+      # Заменяем {{image}} на имя образа в yaml-файле развёртывания.
+      - name: Configuring Image in yaml file
+        shell: bash
+        run: sed -i 's|{{image}}|${{ inputs.IMAGE }}|g' ${{ inputs.CONFIG }}
 
-            # Заменяем {{domain}} на имя окружения в yaml-файле развёртывания.
-            -   name: Configuring Namespace in yaml file
-                shell: bash
-                run: sed -i 's|{{domain}}|${{ inputs.LOCATION }}|g' ${{ inputs.CONFIG }}
+      # Заменяем {{domain}} на имя окружения в yaml-файле развёртывания.
+      - name: Configuring Namespace in yaml file
+        shell: bash
+        run: sed -i 's|{{domain}}|${{ inputs.LOCATION }}|g' ${{ inputs.CONFIG }}
 
-            # Отправляем yaml-файл развёртывания в Kubernetes кластер
-            -   name: Deploy to Kubernetes
-                uses: actions-hub/kubectl@master
-                env:
-                    KUBE_CONFIG: ${{ secrets.DEV_KUBE_CONFIG }}
-                with:
-                    args: -n ${{ inputs.LOCATION }} apply -f ${{ inputs.CONFIG }}
+      # Отправляем yaml-файл развёртывания в Kubernetes кластер
+      - name: Deploy to Kubernetes
+        uses: actions-hub/kubectl@master
+        env:
+          KUBE_CONFIG: ${{ secrets.DEV_KUBE_CONFIG }}
+        with:
+          args: -n ${{ inputs.LOCATION }} apply -f ${{ inputs.CONFIG }}

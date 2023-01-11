@@ -1,32 +1,32 @@
 name: Get version
 
 on:
-    workflow_call:
-        # Map the workflow outputs to job outputs
-        outputs:
-            APP_NAME:
-                description: "Application name"
-                value: ${{ jobs.parse.outputs.output1 }}
-            APP_VERSION:
-                description: "Application version"
-                value: ${{ jobs.parse.outputs.output2 }}
+  workflow_call:
+    # Map the workflow outputs to job outputs
+    outputs:
+      APP_NAME:
+        description: "Application name"
+        value: ${{ jobs.parse.outputs.output1 }}
+      APP_VERSION:
+        description: "Application version"
+        value: ${{ jobs.parse.outputs.output2 }}
 
 jobs:
-    parse:
-        name: Get version
-        runs-on: [self-hosted, docker-runner]
-        # Map the job outputs to step outputs
-        outputs:
-            output1: ${{ steps.step1.outputs.name }}
-            output2: ${{ steps.step2.outputs.version }}
-        steps:
-            -   name: Checkout repository
-                uses: actions/checkout@v3
-            -   id: step1
-                run: echo "name=$(awk -F "\"" '/name/{print $4; exit}' ./package.json)" >> $GITHUB_OUTPUT
-            -   id: step2
-                run: echo "version=$(awk -F "\"" '/version/{print $4; exit}' ./package.json)" >> $GITHUB_OUTPUT
-            -   name: get name
-                run: echo ${{ steps.step1.outputs.name }}
-            -   name: get version
-                run: echo ${{ steps.step2.outputs.version }}
+  parse:
+    name: Get version
+    runs-on: [ self-hosted, docker-runner ]
+    # Map the job outputs to step outputs
+    outputs:
+      output1: ${{ steps.step1.outputs.name }}
+      output2: ${{ steps.step2.outputs.version }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+      - id: step1
+        run: echo "name=$(awk -F "\"" '/name/{print $4; exit}' ./package.json)" >> $GITHUB_OUTPUT
+      - id: step2
+        run: echo "version=$(awk -F "\"" '/version/{print $4; exit}' ./package.json)" >> $GITHUB_OUTPUT
+      - name: get name
+        run: echo ${{ steps.step1.outputs.name }}
+      - name: get version
+        run: echo ${{ steps.step2.outputs.version }}

@@ -1,117 +1,117 @@
 name: Helm Release
 
 on:
-    workflow_call:
-        inputs:
-            APP_NAME:
-                type: string
-                required: false
-                default: ''
-            APP_VERSION:
-                type: string
-                required: false
-                default: ''
-            LOCATION:
-                type: string
-                required: true
-            APP_SYSTEM:
-                type: string
-                required: true
-            DOCKER_REGISTRY:
-                description: "Docker registry for helm chart"
-                type: string
-                required: false
-                default: "docker-registry.trendagent.ru:5000"
-        secrets:
-            DEV_KUBE_CONFIG:
-                required: false
-            TOKEN:
-                required: true
-            DOCKER_REGISTRY_USER:
-                required: true
-            DOCKER_REGISTRY_PASSWORD:
-                required: true
-            TR_PROD_KUBE_CONFIG:
-                required: false
+  workflow_call:
+    inputs:
+      APP_NAME:
+        type: string
+        required: false
+        default: ''
+      APP_VERSION:
+        type: string
+        required: false
+        default: ''
+      LOCATION:
+        type: string
+        required: true
+      APP_SYSTEM:
+        type: string
+        required: true
+      DOCKER_REGISTRY:
+        description: "Docker registry for helm chart"
+        type: string
+        required: false
+        default: "docker-registry.trendagent.ru:5000"
+    secrets:
+      DEV_KUBE_CONFIG:
+        required: false
+      TOKEN:
+        required: true
+      DOCKER_REGISTRY_USER:
+        required: true
+      DOCKER_REGISTRY_PASSWORD:
+        required: true
+      TR_PROD_KUBE_CONFIG:
+        required: false
 
 jobs:
-    release:
-        runs-on: [self-hosted, docker-runner]
-        steps:
-            -   name: Checkout
-                uses: actions/checkout@v3
-                with:
-                    repository: trend-dev/${{ inputs.APP_SYSTEM }}
-                    ref: ${{ github.event.inputs.LOCATION }}
-                    fetch-depth: 0
-                    token: ${{ secrets.TOKEN }}
+  release:
+    runs-on: [ self-hosted, docker-runner ]
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+        with:
+          repository: trend-dev/${{ inputs.APP_SYSTEM }}
+          ref: ${{ github.event.inputs.LOCATION }}
+          fetch-depth: 0
+          token: ${{ secrets.TOKEN }}
 
-            -   name: Check
-                run: |
-                    echo ${{ inputs.APP_NAME }}
-                    echo ${{ inputs.APP_VERSION }}
-                    echo ${{ inputs.APP_SYSTEM }}
+      - name: Check
+        run: |
+          echo ${{ inputs.APP_NAME }}
+          echo ${{ inputs.APP_VERSION }}
+          echo ${{ inputs.APP_SYSTEM }}
 
-            -   name: Configure Git
-                run: |
-                    git config user.name "$GITHUB_ACTOR"
-                    git config user.email "$GITHUB_ACTOR@users.noreply.github.com"
+      - name: Configure Git
+        run: |
+          git config user.name "$GITHUB_ACTOR"
+          git config user.email "$GITHUB_ACTOR@users.noreply.github.com"
 
-            -   name: Install Helm
-                uses: azure/setup-helm@v3
-                with:
-                    version: v3.9.4
+      - name: Install Helm
+        uses: azure/setup-helm@v3
+        with:
+          version: v3.9.4
 
-            -   name: Prepare propertyPath
-                id: path
-                run: echo "VALUE=$.dependencies[?(@.name=='${{ inputs.APP_NAME }}')].version" >> $GITHUB_OUTPUT
+      - name: Prepare propertyPath
+        id: path
+        run: echo "VALUE=$.dependencies[?(@.name=='${{ inputs.APP_NAME }}')].version" >> $GITHUB_OUTPUT
 
-            -   name: Add DEV Kube config
-                if: ${{ github.event.inputs.LOCATION != 'pre-prod' }}
-                shell: bash
-                run: |
-                    mkdir -p ~/.kube
-                    echo ${{ secrets.DEV_KUBE_CONFIG }} | base64 -d > ~/.kube/config
+      - name: Add DEV Kube config
+        if: ${{ github.event.inputs.LOCATION != 'pre-prod' }}
+        shell: bash
+        run: |
+          mkdir -p ~/.kube
+          echo ${{ secrets.DEV_KUBE_CONFIG }} | base64 -d > ~/.kube/config
 
-            -   name: Add TR-PRO Kube config
-                if: ${{ github.event.inputs.LOCATION == 'pre-prod' }}
-                shell: bash
-                run: |
-                    mkdir -p ~/.kube
-                    echo ${{ secrets.TR_PROD_KUBE_CONFIG }} | base64 -d > ~/.kube/config
+      - name: Add TR-PRO Kube config
+        if: ${{ github.event.inputs.LOCATION == 'pre-prod' }}
+        shell: bash
+        run: |
+          mkdir -p ~/.kube
+          echo ${{ secrets.TR_PROD_KUBE_CONFIG }} | base64 -d > ~/.kube/config
 
-            -   name: Update Image Version in the related HelmChart values.yaml
-                if: inputs.APP_VERSION != ''
-                uses: fjogeleit/yaml-update-action@v0.11.1
-                with:
-                    valueFile: 'charts/${{ inputs.APP_SYSTEM }}/Chart.yaml'
-                    propertyPath: ${{ steps.path.outputs.VALUE }}
-                    value: ${{ inputs.APP_VERSION }}
-                    branch: ${{ inputs.LOCATION }}
-                    message: Update ${{ inputs.APP_NAME }} in ${{ inputs.APP_SYSTEM }}
-                    updateFile: true
-                    repository: trend-dev/${{ inputs.APP_SYSTEM }}
-                    token: ${{ secrets.TOKEN }}
+      - name: Update Image Version in the related HelmChart values.yaml
+        if: inputs.APP_VERSION != ''
+        uses: fjogeleit/yaml-update-action@v0.11.1
+        with:
+          valueFile: 'charts/${{ inputs.APP_SYSTEM }}/Chart.yaml'
+          propertyPath: ${{ steps.path.outputs.VALUE }}
+          value: ${{ inputs.APP_VERSION }}
+          branch: ${{ inputs.LOCATION }}
+          message: Update ${{ inputs.APP_NAME }} in ${{ inputs.APP_SYSTEM }}
+          updateFile: true
+          repository: trend-dev/${{ inputs.APP_SYSTEM }}
+          token: ${{ secrets.TOKEN }}
 
-            -   name: Upgrade Dev
-                if: ${{ github.event.inputs.LOCATION != 'pre-prod' }}
-                shell: bash
-                run: |
-                    helm registry login -u ${{ secrets.DOCKER_REGISTRY_USER }} -p ${{ secrets.DOCKER_REGISTRY_PASSWORD }} ${{ inputs.DOCKER_REGISTRY }}
-                    cd ./charts/${{ inputs.APP_SYSTEM }}/
-                    helm dependency build ./
-                    helm upgrade ${{ inputs.APP_SYSTEM }} --install --namespace ${{ inputs.LOCATION }} ./
+      - name: Upgrade Dev
+        if: ${{ github.event.inputs.LOCATION != 'pre-prod' }}
+        shell: bash
+        run: |
+          helm registry login -u ${{ secrets.DOCKER_REGISTRY_USER }} -p ${{ secrets.DOCKER_REGISTRY_PASSWORD }} ${{ inputs.DOCKER_REGISTRY }}
+          cd ./charts/${{ inputs.APP_SYSTEM }}/
+          helm dependency build ./
+          helm upgrade ${{ inputs.APP_SYSTEM }} --install --namespace ${{ inputs.LOCATION }} ./
 
-            -   name: Upgrade pre-prod
-                if: ${{ github.event.inputs.LOCATION == 'pre-prod' }}
-                shell: bash
-                run: |
-                    helm registry login -u ${{ secrets.DOCKER_REGISTRY_USER }} -p ${{ secrets.DOCKER_REGISTRY_PASSWORD }} ${{ inputs.DOCKER_REGISTRY }}
-                    cd ./charts/${{ inputs.APP_SYSTEM }}/
-                    helm dependency build ./
-                    helm upgrade ${{ inputs.APP_SYSTEM }} --install --namespace pre-prod ./
+      - name: Upgrade pre-prod
+        if: ${{ github.event.inputs.LOCATION == 'pre-prod' }}
+        shell: bash
+        run: |
+          helm registry login -u ${{ secrets.DOCKER_REGISTRY_USER }} -p ${{ secrets.DOCKER_REGISTRY_PASSWORD }} ${{ inputs.DOCKER_REGISTRY }}
+          cd ./charts/${{ inputs.APP_SYSTEM }}/
+          helm dependency build ./
+          helm upgrade ${{ inputs.APP_SYSTEM }} --install --namespace pre-prod ./
 
-            -   name: Clear artifacts
-                shell: bash
-                run: |
-                    rm -rf ~/.kube
+      - name: Clear artifacts
+        shell: bash
+        run: |
+          rm -rf ~/.kube

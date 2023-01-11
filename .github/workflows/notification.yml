@@ -1,29 +1,29 @@
 name: Notification
 
 on:
-    workflow_call:
-        secrets:
-            SLACK_WEBHOOK:
-                required: true
+  workflow_call:
+    secrets:
+      SLACK_WEBHOOK:
+        required: true
 
 jobs:
-    slackNotification:
-        name: Slack Notification
-        runs-on: [self-hosted, docker-runner]
-        steps:
-            -   name: Inject slug/short variables
-                uses: rlespinasse/github-slug-action@v4
+  slackNotification:
+    name: Slack Notification
+    runs-on: [ self-hosted, docker-runner ]
+    steps:
+      - name: Inject slug/short variables
+        uses: rlespinasse/github-slug-action@v4
 
-            -   uses: actions/checkout@v3
-            -   name: Slack Notification
-                uses: rtCamp/action-slack-notify@v2
-                env:
-                    SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
-                    SLACK_USERNAME: Уведомление об успешности развертывания проекта
-                    SLACK_COLOR: ${{ job.status }}
-                    SLACK_TITLE: ${{ github.repository }}
-                    SLACK_MESSAGE: |
-                        Окружение: ${{ github.event.inputs.location }}
-                        Ветка: ${{ env.GITHUB_REF_SLUG }}
-                    SLACK_ICON_EMOJI: ":white_check_mark:"
-                    MSG_MINIMAL: true
+      - uses: actions/checkout@v3
+      - name: Slack Notification
+        uses: rtCamp/action-slack-notify@v2
+        env:
+          SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
+          SLACK_USERNAME: Уведомление об успешности развертывания проекта
+          SLACK_COLOR: ${{ job.status }}
+          SLACK_TITLE: ${{ github.repository }}
+          SLACK_MESSAGE: |
+            Окружение: ${{ github.event.inputs.location }}
+            Ветка: ${{ env.GITHUB_REF_SLUG }}
+          SLACK_ICON_EMOJI: ":white_check_mark:"
+          MSG_MINIMAL: true
