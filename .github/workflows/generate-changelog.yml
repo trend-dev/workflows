@@ -3,6 +3,9 @@ run-name: Generate changelog from ${{ github.ref_name }} branch
 
 on:
     workflow_call:
+      secrets:
+        TOKEN:
+          required: true
 
 jobs:
   generate_changelog:
@@ -13,7 +16,7 @@ jobs:
         with:
           repository: ${{ github.repository }}
           fetch-depth: 0
-          token: ${{ secrets.ROOT_TOKEN }}
+          token: ${{ secrets.TOKEN }}
 
       - name: Configure Git
         run: |
