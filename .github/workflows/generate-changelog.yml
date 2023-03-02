@@ -6,6 +6,8 @@ on:
       secrets:
         TOKEN:
           required: true
+        NODE_AUTH_TOKEN:
+          required: true
 
 jobs:
   generate_changelog:
@@ -43,4 +45,4 @@ jobs:
           git tag v${{ needs.version.outputs.APP_VERSION }}
           git push origin main --tags --force
         env:
-          NODE_AUTH_TOKEN: ${{ secrets.GPT_TOKEN }}
+          NODE_AUTH_TOKEN: ${{ secrets.NODE_AUTH_TOKEN }}
