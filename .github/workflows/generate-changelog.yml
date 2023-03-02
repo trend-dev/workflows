@@ -1,0 +1,43 @@
+name: Generate changelog
+run-name: Generate changelog from ${{ github.ref_name }} branch
+
+on:
+    workflow_call:
+
+jobs:
+  generate_changelog:
+    runs-on: [ self-hosted, docker-runner ]
+    steps:
+      - name: Checkout ${{ github.repository }}
+        uses: actions/checkout@v3
+        with:
+          repository: ${{ github.repository }}
+          fetch-depth: 0
+          token: ${{ secrets.ROOT_TOKEN }}
+
+      - name: Configure Git
+        run: |
+          git config user.name "$GITHUB_ACTOR"
+          git config user.email "$GITHUB_ACTOR@users.noreply.github.com"\
+
+      - name: setup node
+        uses: actions/setup-node@v3
+        with:
+          node-version: 16
+          registry-url: 'https://npm.pkg.github.com'
+
+      - id: commitMessage
+        run: echo "commitMessage=$(git log --format=%B -n 1 HEAD~1)" >> $GITHUB_OUTPUT
+
+      - name: Generate changelog
+        run: |
+          npm i
+          npm run cli changelog
+          git add -A
+          git commit -m "docs: Генерация Changelog файла"
+          git reset --soft HEAD~2
+          git commit -m "${{ steps.commitMessage.outputs.commitMessage }}"
+          git tag v${{ needs.version.outputs.APP_VERSION }}
+          git push origin main --tags --force
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.GPT_TOKEN }}
