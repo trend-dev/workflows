@@ -26,7 +26,7 @@ on:
         required: true
       DOCKER_REGISTRY_PASSWORD:
         required: true
-      TR_PROD_KUBE_CONFIG:
+      KUBE_CONFIG:
         required: false
 
 jobs:
@@ -59,7 +59,7 @@ jobs:
         shell: bash
         run: |
           mkdir -p ~/.kube
-          echo ${{ secrets.TR_PROD_KUBE_CONFIG }} | base64 -d > ~/.kube/config
+          echo ${{ secrets.KUBE_CONFIG }} | base64 -d > ~/.kube/config
 
       - name: Update Chart
         #                uses: mshick/fast-envsubst@v1
