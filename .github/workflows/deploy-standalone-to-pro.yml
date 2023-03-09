@@ -77,8 +77,3 @@ jobs:
           helm registry login -u ${{ secrets.DOCKER_REGISTRY_USER }} -p ${{ secrets.DOCKER_REGISTRY_PASSWORD }} ${{ inputs.DOCKER_REGISTRY }}
           cd ./tools/charts/
           helm upgrade ${{ inputs.APP_NAME }} ./${{ inputs.APP_NAME }} --install --namespace ${{ inputs.LOCATION }}
-
-      - name: Clear artifacts
-        shell: bash
-        run: |
-          rm -rf ~/.kube
