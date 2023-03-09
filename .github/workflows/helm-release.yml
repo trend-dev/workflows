@@ -16,7 +16,7 @@ on:
         required: true
       APP_SYSTEM:
         type: string
-        required: false
+        required: true
       DOCKER_REGISTRY:
         description: "Docker registry for helm chart"
         type: string
