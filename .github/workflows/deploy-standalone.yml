@@ -55,7 +55,7 @@ jobs:
         with:
           version: v3.9.4
 
-      - name: Add TR-PRO Kube config
+      - name: Add Kube config
         shell: bash
         run: |
           mkdir -p ~/.kube
