@@ -27,7 +27,7 @@ on:
       DOCKER_REGISTRY_PASSWORD:
         required: true
       KUBE_CONFIG:
-        required: false
+        required: true
 
 jobs:
   release:
