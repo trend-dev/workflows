@@ -71,7 +71,7 @@ jobs:
           in-file: tools/charts/${{ inputs.APP_NAME }}/Chart.yaml
           out-file: tools/charts/${{ inputs.APP_NAME }}/Chart.yaml
 
-      - name: Upgrade prod
+      - name: Upgrade env
         shell: bash
         run: |
           helm registry login -u ${{ secrets.DOCKER_REGISTRY_USER }} -p ${{ secrets.DOCKER_REGISTRY_PASSWORD }} ${{ inputs.DOCKER_REGISTRY }}
