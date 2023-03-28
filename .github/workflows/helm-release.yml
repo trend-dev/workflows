@@ -17,16 +17,13 @@ on:
       APP_SYSTEM:
         type: string
         required: true
-      DOCKER_REGISTRY:
-        description: "Docker registry for helm chart"
-        type: string
-        required: false
-        default: "docker-registry.trendagent.ru:5000"
     secrets:
       DEV_KUBE_CONFIG:
         required: false
       TOKEN:
         required: true
+      DOCKER_REGISTRY:
+        required: false
       DOCKER_REGISTRY_USER:
         required: true
       DOCKER_REGISTRY_PASSWORD:
@@ -97,7 +94,7 @@ jobs:
         if: ${{ github.event.inputs.LOCATION != 'beta' }}
         shell: bash
         run: |
-          helm registry login -u ${{ secrets.DOCKER_REGISTRY_USER }} -p ${{ secrets.DOCKER_REGISTRY_PASSWORD }} ${{ inputs.DOCKER_REGISTRY }}
+          helm registry login -u ${{ secrets.DOCKER_REGISTRY_USER }} -p ${{ secrets.DOCKER_REGISTRY_PASSWORD }} ${{ secrets.DOCKER_REGISTRY }}
           cd ./charts/${{ inputs.APP_SYSTEM }}/
           helm dependency build ./
           helm upgrade ${{ inputs.APP_SYSTEM }} --install --namespace ${{ inputs.LOCATION }} ./
@@ -106,7 +103,7 @@ jobs:
         if: ${{ github.event.inputs.LOCATION == 'beta' }}
         shell: bash
         run: |
-          helm registry login -u ${{ secrets.DOCKER_REGISTRY_USER }} -p ${{ secrets.DOCKER_REGISTRY_PASSWORD }} ${{ inputs.DOCKER_REGISTRY }}
+          helm registry login -u ${{ secrets.DOCKER_REGISTRY_USER }} -p ${{ secrets.DOCKER_REGISTRY_PASSWORD }} ${{ secrets.DOCKER_REGISTRY }}
           cd ./charts/${{ inputs.APP_SYSTEM }}/
           helm dependency build ./
           helm upgrade ${{ inputs.APP_SYSTEM }} --install --namespace beta ./

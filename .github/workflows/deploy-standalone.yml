@@ -14,14 +14,11 @@ on:
       LOCATION:
         type: string
         required: true
-      DOCKER_REGISTRY:
-        description: "Docker registry for helm chart"
-        type: string
-        required: false
-        default: "docker-registry.trendagent.ru:5000"
     secrets:
       TOKEN:
         required: true
+      DOCKER_REGISTRY:
+        required: false
       DOCKER_REGISTRY_USER:
         required: true
       DOCKER_REGISTRY_PASSWORD:
@@ -74,6 +71,6 @@ jobs:
       - name: Upgrade env
         shell: bash
         run: |
-          helm registry login -u ${{ secrets.DOCKER_REGISTRY_USER }} -p ${{ secrets.DOCKER_REGISTRY_PASSWORD }} ${{ inputs.DOCKER_REGISTRY }}
+          helm registry login -u ${{ secrets.DOCKER_REGISTRY_USER }} -p ${{ secrets.DOCKER_REGISTRY_PASSWORD }} ${{ secrets.DOCKER_REGISTRY }}
           cd ./tools/charts/
           helm upgrade ${{ inputs.APP_NAME }} ./${{ inputs.APP_NAME }} --install --namespace ${{ inputs.LOCATION }}

@@ -15,16 +15,13 @@ on:
       APP_SYSTEM:
         type: string
         required: true
-      DOCKER_REGISTRY:
-        description: "Docker registry for helm chart"
-        type: string
-        required: false
-        default: "docker-registry.trendagent.ru:5000"
     secrets:
       DOCKER_REGISTRY_USER:
         required: true
       DOCKER_REGISTRY_PASSWORD:
         required: true
+      DOCKER_REGISTRY:
+        required: false
 
 jobs:
   chart:
@@ -44,7 +41,7 @@ jobs:
       - name: Log into Docker registry
         uses: docker/login-action@v1
         with:
-          registry: ${{ inputs.DOCKER_REGISTRY }}
+          registry: ${{ secrets.DOCKER_REGISTRY }}
           username: ${{ secrets.DOCKER_REGISTRY_USER }}
           password: ${{ secrets.DOCKER_REGISTRY_PASSWORD }}
 
@@ -61,6 +58,6 @@ jobs:
         shell: bash
         run: |
           cd ${{ inputs.CHART_FOLDER }}
-          helm registry login -u ${{ secrets.DOCKER_REGISTRY_USER }} -p ${{ secrets.DOCKER_REGISTRY_PASSWORD }} ${{ inputs.DOCKER_REGISTRY }}
+          helm registry login -u ${{ secrets.DOCKER_REGISTRY_USER }} -p ${{ secrets.DOCKER_REGISTRY_PASSWORD }} ${{ secrets.DOCKER_REGISTRY }}
           helm package ./
-          helm push ${{ inputs.APP_NAME }}-${{ inputs.APP_VERSION }}.tgz oci://${{ inputs.DOCKER_REGISTRY }}/helm-charts
+          helm push ${{ inputs.APP_NAME }}-${{ inputs.APP_VERSION }}.tgz oci://${{ secrets.DOCKER_REGISTRY }}/helm-charts
