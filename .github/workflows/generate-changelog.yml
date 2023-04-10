@@ -41,8 +41,7 @@ jobs:
 
       - name: Generate changelog
         run: |
-          npm i
-          npm run cli changelog
+          npx @trend-dev/ui-libs-cli changelog
           git add -A
           git commit -m "docs: Генерация Changelog файла"
           git reset --soft HEAD~2
