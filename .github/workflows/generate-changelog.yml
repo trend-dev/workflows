@@ -37,7 +37,7 @@ jobs:
           registry-url: 'https://npm.pkg.github.com'
 
       - id: commitMessage
-        run: echo 'commitMessage=$(git log --format=%B -n 1 HEAD~1)' >> $GITHUB_OUTPUT
+        run: echo 'commitMessage=$(git log --format=%B -n 1 HEAD~0)' >> $GITHUB_OUTPUT
 
       - name: Generate changelog
         run: |
