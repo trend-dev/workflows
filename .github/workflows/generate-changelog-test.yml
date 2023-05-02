@@ -1,0 +1,52 @@
+name: Generate changelog
+run-name: Generate changelog from ${{ github.ref_name }} branch
+
+on:
+    workflow_call:
+      inputs:
+        APP_VERSION:
+          type: string
+          required: true
+          default: ''
+      secrets:
+        TOKEN:
+          required: true
+        NODE_AUTH_TOKEN:
+          required: true
+
+jobs:
+  generate_changelog:
+    runs-on: [ self-hosted, docker-runner ]
+    steps:
+      - name: Checkout ${{ github.repository }}
+        uses: actions/checkout@v3
+        with:
+          repository: ${{ github.repository }}
+          fetch-depth: 0
+          token: ${{ secrets.TOKEN }}
+
+      - name: Configure Git
+        run: |
+          git config user.name "$GITHUB_ACTOR"
+          git config user.email "$GITHUB_ACTOR@users.noreply.github.com"
+
+      - name: setup node
+        uses: actions/setup-node@v3
+        with:
+          node-version: 16
+          registry-url: 'https://npm.pkg.github.com'
+#
+#      - id: commitMessage
+#        run: echo 'commitMessage=$(git log -1 --pretty=%B)' >> $GITHUB_OUTPUT
+
+      - name: Generate changelog
+        run: |
+          npx @trend-dev/ui-libs-cli changelog
+          git add -A
+          git commit -m "docs: Генерация Changelog файла"
+          git reset --soft HEAD~2
+          git commit -m "`git log main..origin/test`"
+          git tag v${{ inputs.APP_VERSION }}
+          git push origin main --tags --force
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NODE_AUTH_TOKEN }}
