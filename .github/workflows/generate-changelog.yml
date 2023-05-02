@@ -45,7 +45,8 @@ jobs:
           git add -A
           git commit -m "docs: Генерация Changelog файла"
           git reset --soft HEAD~2
-          git commit -m "`git log --no-merges main..`"
+          git log -1 --pretty=%B > /tmp/commitMessage
+          git commit -m "`git log -1 --pretty=%B`"
           git tag v${{ inputs.APP_VERSION }}
           git push origin main --tags --force
         env:
