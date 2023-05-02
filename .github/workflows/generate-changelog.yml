@@ -35,9 +35,9 @@ jobs:
         with:
           node-version: 16
           registry-url: 'https://npm.pkg.github.com'
-
-      - id: commitMessage
-        run: echo 'commitMessage=$(git log -1 --pretty=%B)' >> $GITHUB_OUTPUT
+#
+#      - id: commitMessage
+#        run: echo 'commitMessage=$(git log -1 --pretty=%B)' >> $GITHUB_OUTPUT
 
       - name: Generate changelog
         run: |
@@ -45,7 +45,8 @@ jobs:
           git add -A
           git commit -m "docs: Генерация Changelog файла"
           git reset --soft HEAD~2
-          git commit -m "${{ steps.commitMessage.outputs.commitMessage }}"
+          git log -1 --pretty=%B > /tmp/commitMessage
+          git commit -m `cat /tmp/commitMessage`
           git tag v${{ inputs.APP_VERSION }}
           git push origin main --tags --force
         env:
