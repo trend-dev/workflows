@@ -16,6 +16,7 @@ on:
 
 jobs:
   generate_changelog:
+    if: github.event.pull_request.merged == true
     runs-on: [ self-hosted, docker-runner ]
     steps:
       - name: Checkout ${{ github.repository }}
@@ -45,7 +46,7 @@ jobs:
           git add -A
           git commit -m "docs: Генерация Changelog файла"
           git reset --soft HEAD~2
-          git commit -m "`git log main..origin/test`"
+          git commit -m "`git log -1 --pretty=%B origin/test`"
           git tag v${{ inputs.APP_VERSION }}
           git push origin main --tags --force
         env:
