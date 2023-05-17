@@ -49,9 +49,9 @@ jobs:
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NODE_AUTH_TOKEN }}
 
-    failed_notification:
-      if: ${{ always() && contains(needs.*.result, 'failure') }}
-      needs: generate_changelog
-      uses: trend-dev/workflows/.github/workflows/notification.yml@master
-      secrets:
-        SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK_CHANGELOG_CHANNEL }}
+  failed_notification:
+    if: ${{ always() && contains(needs.*.result, 'failure') }}
+    needs: generate_changelog
+    uses: trend-dev/workflows/.github/workflows/notification.yml@master
+    secrets:
+      SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK_CHANGELOG_CHANNEL }}
