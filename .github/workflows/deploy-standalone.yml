@@ -39,6 +39,7 @@ jobs:
           repository: trend-dev/${{ inputs.APP_NAME }}
           fetch-depth: 0
           token: ${{ secrets.TOKEN }}
+          ref: ${{ github.ref_name }}
 
       - name: Check
         run: |
