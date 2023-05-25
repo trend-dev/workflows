@@ -53,6 +53,7 @@ jobs:
       - name: Generate changelog libs-cli-ui
         if: ${{ github.repository == 'trend-dev/libs-cli-ui' }}
         run: |
+          npm i
           npm run trend-cli changelog
           git add -A
           git commit --amend --no-edit
