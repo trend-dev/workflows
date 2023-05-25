@@ -40,7 +40,7 @@ jobs:
       #        run: echo 'commitMessage=$(git log -1 --pretty=%B)' >> $GITHUB_OUTPUT
 
       - name: Generate changelog all repos
-        if: ${{ github.repository }} != 'trend-dev/libs-cli-ui' }}
+        if: ${{ github.repository != 'trend-dev/libs-cli-ui' }}
         run: |
           npx @trend-dev/ui-libs-cli changelog
           git add -A
@@ -51,7 +51,7 @@ jobs:
           NODE_AUTH_TOKEN: ${{ secrets.NODE_AUTH_TOKEN }}
 
       - name: Generate changelog libs-cli-ui
-        if: ${{ github.repository }} == 'trend-dev/libs-cli-ui' }}
+        if: ${{ github.repository == 'trend-dev/libs-cli-ui' }}
         run: |
           npm run trend-cli changelog
           git add -A
