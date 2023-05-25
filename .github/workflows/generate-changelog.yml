@@ -13,6 +13,8 @@ on:
         required: true
       NODE_AUTH_TOKEN:
         required: true
+      SLACK_WEBHOOK:
+        required: false
 
 jobs:
   generate_changelog:
