@@ -60,7 +60,7 @@ jobs:
       - name: Install Helm
         uses: azure/setup-helm@v3
         with:
-          version: v3.9.4
+          version: v3.11.1
 
       - name: Prepare propertyPath
         id: path
@@ -82,7 +82,7 @@ jobs:
 
       - name: Update Image Version in the related HelmChart values.yaml
         if: inputs.APP_VERSION != ''
-        uses: fjogeleit/yaml-update-action@v0.11.1
+        uses: fjogeleit/yaml-update-action@main
         with:
           valueFile: 'charts/${{ inputs.APP_SYSTEM }}/Chart.yaml'
           propertyPath: ${{ steps.path.outputs.VALUE }}
