@@ -55,5 +55,5 @@ jobs:
         run: |
           helm registry login -u ${{ secrets.DOCKER_REGISTRY_USER }} -p ${{ secrets.DOCKER_REGISTRY_PASSWORD }} ${{ inputs.DOCKER_REGISTRY }}
           helm pull oci://${{ inputs.DOCKER_REGISTRY }}/helm-charts/${{ inputs.APP_NAME }} --version ${{ inputs.APP_VERSION }}  --untar
-          cd ./tools/charts/
+          cd ${{ inputs.APP_NAME }}/tools/charts/
           helm upgrade ${{ inputs.APP_NAME }} ./${{ inputs.APP_NAME }} --install --namespace ${{ inputs.LOCATION }}
