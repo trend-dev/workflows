@@ -1,0 +1,58 @@
+name: TR PRO deploy
+
+on:
+  workflow_call:
+    inputs:
+      APP_NAME:
+        type: string
+        required: false
+        default: ''
+      APP_VERSION:
+        type: string
+        required: false
+        default: ''
+      LOCATION:
+        type: string
+        required: true
+      DOCKER_REGISTRY:
+        description: "Docker registry for helm chart"
+        type: string
+        required: false
+        default: "docker-registry.trendagent.ru:5000"
+    secrets:
+      TOKEN:
+        required: true
+      DOCKER_REGISTRY_USER:
+        required: true
+      DOCKER_REGISTRY_PASSWORD:
+        required: true
+      KUBE_CONFIG:
+        required: true
+
+jobs:
+  release:
+    runs-on: [ self-hosted, docker-runner ]
+    steps:
+
+      - name: Check
+        run: |
+          echo ${{ inputs.APP_NAME }}
+          echo ${{ inputs.APP_VERSION }}
+
+      - name: Install Helm
+        uses: azure/setup-helm@v3
+        with:
+          version: v3.11.1
+
+      - name: Add Kube config
+        shell: bash
+        run: |
+          mkdir -p ~/.kube
+          echo ${{ secrets.KUBE_CONFIG }} | base64 -d > ~/.kube/config
+
+      - name: Upgrade env
+        shell: bash
+        run: |
+          helm registry login -u ${{ secrets.DOCKER_REGISTRY_USER }} -p ${{ secrets.DOCKER_REGISTRY_PASSWORD }} ${{ inputs.DOCKER_REGISTRY }}
+          cd ./tools/charts/
+          helm upgrade ${{ inputs.APP_NAME }} ./${{ inputs.APP_NAME }} --install --namespace ${{ inputs.LOCATION }}
