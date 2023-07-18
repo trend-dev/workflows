@@ -30,7 +30,7 @@ on:
         required: true
 
 jobs:
-  chart:
+  dry_run_chart:
     runs-on: [ self-hosted, docker-runner ]
     steps:
 
