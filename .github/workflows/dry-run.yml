@@ -53,7 +53,6 @@ jobs:
       - name: Dry run
         shell: bash
         run: |
-          cd ${{ inputs.CHART_FOLDER }}
           helm registry login -u ${{ secrets.DOCKER_REGISTRY_USER }} -p ${{ secrets.DOCKER_REGISTRY_PASSWORD }} ${{ inputs.DOCKER_REGISTRY }}
           helm pull oci://${{ inputs.DOCKER_REGISTRY }}/helm-charts/${{ inputs.APP_NAME }} --version ${{ inputs.APP_VERSION }}  --untar
           helm install ${{ inputs.APP_NAME }}  ./${{ inputs.APP_NAME }} --dry-run -n ${{ inputs.LOCATION }}
