@@ -31,10 +31,6 @@ jobs:
   chart:
     runs-on: [ self-hosted, docker-runner ]
     steps:
-      - name: Checkout
-        uses: actions/checkout@v3
-        with:
-          fetch-depth: 0
 
       - name: Install Helm
         uses: azure/setup-helm@v3
@@ -47,6 +43,12 @@ jobs:
           registry: ${{ inputs.DOCKER_REGISTRY }}
           username: ${{ secrets.DOCKER_REGISTRY_USER }}
           password: ${{ secrets.DOCKER_REGISTRY_PASSWORD }}
+
+      - name: Add Kube config
+        shell: bash
+        run: |
+          mkdir -p ~/.kube
+          echo ${{ secrets.KUBE_CONFIG }} | base64 -d > ~/.kube/config
 
       - name: Dry run
         shell: bash
