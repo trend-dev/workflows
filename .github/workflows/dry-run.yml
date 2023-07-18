@@ -10,9 +10,6 @@ on:
       APP_VERSION:
         type: string
         required: true
-      CHART_FOLDER:
-        type: string
-        required: true
       DOCKER_REGISTRY:
         description: "Docker registry for helm chart"
         type: string
