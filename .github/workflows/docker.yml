@@ -23,6 +23,10 @@ on:
         type: string
         required: false
         default: "docker-registry.trendagent.ru:5000"
+      TEST:
+        description: "Run unit tests"
+        type: string
+        required: false
     outputs:
       IMAGE:
         description: "Docker image name"
