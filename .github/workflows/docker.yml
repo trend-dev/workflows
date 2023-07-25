@@ -38,8 +38,6 @@ on:
         required: true
       GPT_TOKEN:
         required: true
-      NODE_AUTH_TOKEN:
-        required: false
 
 jobs:
   variables:
@@ -126,10 +124,10 @@ jobs:
         with:
           node-version: '18'
           registry-url: 'https://npm.pkg.github.com'
-      #          scope: '@trend-dev'
-      #        env:
-      #          NODE_AUTH_TOKEN: ${{ secrets.GPT_TOKEN_NEW }}
-      #          CI: true
+          scope: '@trend-dev'
+        env:
+          GPT_TOKEN: ${{ secrets.GPT_TOKEN }}
+          CI: true
 
       - name: Checkout repository
         uses: actions/checkout@v3
