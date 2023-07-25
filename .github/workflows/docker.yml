@@ -120,22 +120,24 @@ jobs:
     runs-on: [ self-hosted, docker-runner ]
     needs: variables
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v3
-
       - name: Setup node
         id: node_build
         uses: actions/setup-node@v3
         with:
           node-version: '18'
           registry-url: 'https://npm.pkg.github.com'
-#          scope: '@trend-dev'
-#        env:
-#          NODE_AUTH_TOKEN: ${{ secrets.GPT_TOKEN_NEW }}
-#          CI: true
+      #          scope: '@trend-dev'
+      #        env:
+      #          NODE_AUTH_TOKEN: ${{ secrets.GPT_TOKEN_NEW }}
+      #          CI: true
+
+      - name: Checkout repository
+        uses: actions/checkout@v3
 
       - name: run tests
         run: |
+          pwd
+          ls -lah
           npm run ci
           npm run test
 
