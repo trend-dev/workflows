@@ -134,7 +134,6 @@ jobs:
 
       - name: run tests
         run: |
-#          npm set //npm.pkg.github.com/:_authToken "${{ secrets.GPT_TOKEN }}"
           npm ci
           npm run test
 
