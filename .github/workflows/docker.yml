@@ -138,7 +138,7 @@ jobs:
         run: |
           pwd
           ls -lah
-          npm run ci
+          npm ci
           npm run test
 
       - name: Set up Docker Context for Buildx
