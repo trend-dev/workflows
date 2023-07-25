@@ -27,6 +27,7 @@ on:
         description: "Run unit tests"
         type: string
         required: false
+        default: 'false'
     outputs:
       IMAGE:
         description: "Docker image name"
