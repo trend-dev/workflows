@@ -2,20 +2,13 @@ name: Run unit tests
 
 on:
   workflow_call:
-    inputs:
-      TEST:
-        description: "Run unit tests"
-        type: string
-        required: false
-        default: 'false'
     secrets:
       GPT_TOKEN:
         required: true
 
 jobs:
   Run_unit_tests:
-    if: inputs.TEST == 'true'
-    name: Test & build & push docker image
+    name: Test
     runs-on: [ self-hosted, docker-runner ]
     steps:
       - name: Setup node
