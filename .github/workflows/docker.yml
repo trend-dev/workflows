@@ -53,6 +53,12 @@ jobs:
     runs-on: [ self-hosted, docker-runner ]
     needs: variables
     steps:
+      - name: Log into Docker HUB
+        uses: docker/login-action@v2
+        with:
+          username: ${{ secrets.DOCKER_HUB_SSP_NAME }}
+          password: ${{ secrets.DOCKER_HUB_SSP_TOKEN }}
+
       - name: Checkout repository
         uses: actions/checkout@v3
 
