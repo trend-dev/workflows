@@ -32,3 +32,5 @@ jobs:
         run: echo ${{ steps.step2.outputs.version }}
       - name: echo release_version
         run: echo ${{ steps.step2.outputs.version }}-${{ github.sha }}
+      - name: echo ${{ steps.step2.outputs.version }}-${{ github.sha }}
+        run: echo ${{ steps.step2.outputs.version }}-${{ github.sha }}
