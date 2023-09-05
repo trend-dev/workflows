@@ -65,11 +65,14 @@ jobs:
           password: ${{ secrets.DOCKER_REGISTRY_PASSWORD }}
 
       - name: Build and push
-        uses: docker/build-push-action@v3
+        uses: docker/build-push-action@v4
         with:
           context: .
           file: ${{ inputs.DOCKERFILE }}
+          push: true
           tags: |
             ${{ inputs.DOCKER_REGISTRY }}/${{ inputs.APP_NAME }}:${{ inputs.APP_VERSION }}
+          cache-from: type=local,src=/tmp/.buildx-cache
+          cache-to: type=local,dest=/tmp/.buildx-cache-new,mode=max
           build-args: |
             "NPM_TOKEN=${{ secrets.GPT_TOKEN }}"
