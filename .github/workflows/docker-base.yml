@@ -36,6 +36,9 @@ jobs:
     name: Build & push docker image
     runs-on: [ self-hosted, docker-runner ]
     steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
       - name: Set up Docker Context for Buildx
         run: docker context create builders
 
@@ -44,6 +47,15 @@ jobs:
         with:
           version: latest
           endpoint: builders
+
+      # Cache
+      - name: Cache Docker layers
+        uses: actions/cache@v3
+        with:
+          path: /tmp/.buildx-cache
+          key: ${{ runner.os }}-buildx-${{ github.sha }}
+          restore-keys: |
+            ${{ runner.os }}-buildx-
 
       - name: Log into Docker registry
         uses: docker/login-action@v2
