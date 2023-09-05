@@ -34,7 +34,7 @@ jobs:
     runs-on: [ self-hosted, docker-runner ]
     steps:
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           repository: trend-dev/${{ inputs.APP_NAME }}
           fetch-depth: 0
