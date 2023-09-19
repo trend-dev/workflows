@@ -11,6 +11,9 @@ jobs:
     name: Test
     runs-on: [ self-hosted, docker-runner ]
     steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
       - name: Setup node
         id: node_build
         uses: actions/setup-node@v3
@@ -22,9 +25,6 @@ jobs:
         env:
           NODE_AUTH_TOKEN: ${{ secrets.GPT_TOKEN }}
           CI: true
-
-      - name: Checkout repository
-        uses: actions/checkout@v4
 
       - name: run tests
         run: |
