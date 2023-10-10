@@ -1,0 +1,26 @@
+name: Run smoke test
+
+on:
+  workflow_call:
+    inputs:
+      LOCATION:
+        type: string
+        required: true
+    secrets:
+      QA_AUTH_USER:
+        required: true
+      QA_AUTH_PASSWORD:
+        required: true
+
+jobs:
+  qa_test:
+    runs-on: [ self-hosted, docker-runner ]
+    steps:
+      - name: run tests on QA clusters
+        if: ${{ inputs.LOCATION == 'stage' }}
+        uses: fjogeleit/http-request-action@v1
+        with:
+          url: 'http://94.26.226.163:8000/buildByToken/buildWithParameters?token=token_to_start_job&taEnv=STAGE&taCity=SPB&job=TA%20smoke'
+          method: 'POST'
+          username: ${{ secrets.QA_AUTH_USER }}
+          password: ${{ secrets.QA_AUTH_PASSWORD }}
