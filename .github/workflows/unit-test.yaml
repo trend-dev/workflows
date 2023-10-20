@@ -89,4 +89,4 @@ jobs:
           echo "${{ needs.Run_unit_tests.outputs.VERSION }}"
           echo "${{ needs.Run_unit_tests.outputs.PERCENT }}"
           export PGPASSWORD=${{ secrets.POSTGRES_PASSWORD }};
-          psql -h ${{ secrets.POSTGRES_HOST }} -U ${{ secrets.POSTGRES_USER }} -d ${{ secrets.POSTGRES_DB }} -c "INSERT INTO public.ut_coverage (timestamp, service, version, percent) VALUES ('${{ needs.Run_unit_tests.outputs.TIMESTAMP }}','${{ needs.Run_unit_tests.outputs.SERVICE }}', '${{ needs.Run_unit_tests.outputs.VERSION }}', '${{ needs.Run_unit_tests.outputs.PERCENT }}');"
+          psql -h ${{ secrets.POSTGRES_HOST }} -U ${{ secrets.POSTGRES_USER }} -d ${{ secrets.POSTGRES_DB }} -c "INSERT INTO raw.ut_coverage (timestamp, service, version, percent) VALUES ('${{ needs.Run_unit_tests.outputs.TIMESTAMP }}','${{ needs.Run_unit_tests.outputs.SERVICE }}', '${{ needs.Run_unit_tests.outputs.VERSION }}', '${{ needs.Run_unit_tests.outputs.PERCENT }}');"
