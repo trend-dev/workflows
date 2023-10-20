@@ -2,11 +2,6 @@ name: Run smoke test
 
 on:
   workflow_call:
-    secrets:
-      QA_AUTH_USER:
-        required: true
-      QA_AUTH_PASSWORD:
-        required: true
 
 jobs:
   qa_test:
