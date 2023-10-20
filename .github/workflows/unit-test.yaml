@@ -54,7 +54,7 @@ jobs:
       - name: run tests
         run: |
           npm ci
-          npm run test:cov
+          npm run test
 
       - id: timestamp
         run: echo "TIMESTAMP=$(date +%s)" >> $GITHUB_OUTPUT
