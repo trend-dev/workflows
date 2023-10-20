@@ -11,17 +11,6 @@ on:
         value: ${{ jobs.Run_unit_tests.outputs.VERSION }}
       PERCENT:
         value: ${{ jobs.Run_unit_tests.outputs.PERCENT }}
-    secrets:
-      GPT_TOKEN:
-        required: true
-      POSTGRES_USER:
-        required: true
-      POSTGRES_PASSWORD:
-        required: true
-      POSTGRES_DB:
-        required: true
-      POSTGRES_HOST:
-        required: true
 
 jobs:
   Run_unit_tests:
@@ -88,5 +77,5 @@ jobs:
           echo "${{ needs.Run_unit_tests.outputs.SERVICE }}"
           echo "${{ needs.Run_unit_tests.outputs.VERSION }}"
           echo "${{ needs.Run_unit_tests.outputs.PERCENT }}"
-          export PGPASSWORD=${{ secrets.POSTGRES_PASSWORD }};
-          psql -h ${{ secrets.POSTGRES_HOST }} -U ${{ secrets.POSTGRES_USER }} -d ${{ secrets.POSTGRES_DB }} -c "INSERT INTO raw.ut_coverage (timestamp, service, version, percent) VALUES ('${{ needs.Run_unit_tests.outputs.TIMESTAMP }}','${{ needs.Run_unit_tests.outputs.SERVICE }}', '${{ needs.Run_unit_tests.outputs.VERSION }}', '${{ needs.Run_unit_tests.outputs.PERCENT }}');"
+          export PGPASSWORD=${{ secrets.PSQL_ANALYTICS_PW }};
+          psql -h ${{ secrets.PSQL_ANALYTICS_HOST }} -U ${{ secrets.PSQL_ANALYTICS_USER }} -d ${{ secrets.PSQL_ANALYTICS_DB }} -c "INSERT INTO raw.ut_coverage (timestamp, service, version, percent) VALUES ('${{ needs.Run_unit_tests.outputs.TIMESTAMP }}','${{ needs.Run_unit_tests.outputs.SERVICE }}', '${{ needs.Run_unit_tests.outputs.VERSION }}', '${{ needs.Run_unit_tests.outputs.PERCENT }}');"
