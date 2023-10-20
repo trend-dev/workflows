@@ -80,7 +80,7 @@ jobs:
       refs/heads/Release
       ', github.ref)
     container:
-      image: postgres
+      image: ghcr.io/trend-dev/postgres:latest
     steps:
       - name: Connect to Postgres
         run: |
