@@ -1,0 +1,88 @@
+name: Run unit tests for monorepos
+
+on:
+  workflow_call:
+    outputs:
+      QUERY:
+        value: ${{ jobs.Run_unit_tests.outputs.QUERY }}
+
+jobs:
+  Run_unit_tests:
+    name: Running autotests
+    runs-on: [ self-hosted, docker-runner ]
+    outputs:
+      QUERY: ${{ steps.sqlcortage.outputs.QUERY }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          repository: ${{ github.repository }}
+          fetch-depth: 0
+          ref: '${{ github.head_ref }}'
+
+      - name: Setup node
+        id: node_build
+        uses: actions/setup-node@v3
+        with:
+          node-version: '16.17.0'
+          token: ${{ secrets.GPT_TOKEN }}
+          registry-url: 'https://npm.pkg.github.com'
+
+      - uses: actions/cache@v3
+        id: cache
+        with:
+          path: ./node_modules
+          key: ${{ runner.os }}-node-${{ hashFiles('**/yarn.lock') }}
+
+      - name: Install dependencies
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.GPT_TOKEN }}
+        run: |
+          npm install -g yarn
+          npm install -g nx@16.8.0
+          yarn install
+
+      - name: 'Setup jq'
+        uses: dcarbone/install-jq-action@v1.0.1
+      # WARNING! use only for dedicated runners like Docker. For VM will need to rewrite a filenames to avoid conflicts with pipelines
+      - name: temporaryFiles
+        run: |
+          git diff --name-only HEAD^ HEAD ${{ github.head_ref }} | grep "packages/" | cut -f2 -d"/" | sed -r '/^$/d' | uniq > /tmp/modifiedPackagesUT;
+          for name in `cat /tmp/modifiedPackagesUT`; do  jq -r '. | "\(.name),"' packages/$name/package.json | tr -d "\n"; \
+          done > /tmp/projectsTmpUT; cat /tmp/projectsTmpUT | sed 's/.$//' > /tmp/projectsUT
+
+      - id: packagesName
+        run: echo "NAMES=$(cat /tmp/projectsUT)" >> $GITHUB_OUTPUT
+
+      - name: Test
+        run: npx nx run-many --target=test --projects=${{ steps.packagesName.outputs.NAMES }} --parallel || true
+
+      - id: coverageInfo
+        run: |
+          for names in `cat /tmp/modifiedPackagesUT`; do cat packages/$names/package.json | jq  -r '.name' | sed -e "s/.*/'&'/"; done > /tmp/servicesUT
+          for names in `cat /tmp/modifiedPackagesUT`; do cat packages/$names/coverage/coverage-summary.json | jq '.total.lines.pct' | sed -e "s/.*/'&'/"; done > /tmp/pctUT
+          for names in `cat /tmp/modifiedPackagesUT`; do cat packages/$names/package.json | jq  -r '.version' | sed -e "s/.*/'&'/"; done > /tmp/versionUT
+          for names in `cat /tmp/modifiedPackagesUT`; do echo `date +%s` | sed -e "s/.*/'&'/"; done > /tmp/timestampUT
+
+      - id: sqlcortage
+        run: echo "QUERY=$(paste -d ',' /tmp/timestampUT /tmp/servicesUT /tmp/versionUT /tmp/pctUT | sed 's/.*/(&)/' | sed 's/$/,/' | tr -d '\n' | sed 's/.$//')" >> $GITHUB_OUTPUT
+
+  Publish_to_db:
+    name: publish_to_db
+    runs-on: [ self-hosted, docker-runner ]
+    needs: Run_unit_tests
+    if:
+      contains('
+      refs/heads/main
+      refs/heads/master
+      refs/heads/release
+      refs/heads/Release
+      ', github.ref)
+    container:
+      image: postgres
+    steps:
+      - name: Connect to Postgres
+        run: |
+          echo "${{ needs.Run_unit_tests.outputs.QUERY }}"
+          export PGPASSWORD=${{ secrets.PSQL_ANALYTICS_PW }};
+          psql -h ${{ secrets.PSQL_ANALYTICS_HOST }} -U ${{ secrets.PSQL_ANALYTICS_USER }} -d ${{ secrets.PSQL_ANALYTICS_DB }} -c "INSERT INTO raw.ut_coverage (timestamp, service, version, percent) VALUES ${{ needs.Run_unit_tests.outputs.QUERY }};"
