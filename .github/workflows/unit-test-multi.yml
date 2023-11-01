@@ -70,13 +70,6 @@ jobs:
     name: publish_to_db
     runs-on: [ self-hosted, docker-runner ]
     needs: Run_unit_tests
-    if:
-      contains('
-      refs/heads/main
-      refs/heads/master
-      refs/heads/release
-      refs/heads/Release
-      ', github.ref)
     container:
       image: postgres
     steps:
