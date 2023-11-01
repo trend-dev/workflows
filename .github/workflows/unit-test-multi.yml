@@ -54,7 +54,7 @@ jobs:
         run: echo "NAMES=$(cat /tmp/projectsUT)" >> $GITHUB_OUTPUT
 
       - name: Test
-        run: npx nx run-many --target=test --projects=${{ steps.packagesName.outputs.NAMES }} --parallel || true
+        run: npx nx run-many --target=test --projects=${{ steps.packagesName.outputs.NAMES }} --parallel=false || true
 
       - id: coverageInfo
         run: |
