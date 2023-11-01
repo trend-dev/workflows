@@ -18,7 +18,6 @@ jobs:
         with:
           repository: ${{ github.repository }}
           fetch-depth: 0
-          ref: '${{ github.head_ref }}'
 
       - name: Setup node
         id: node_build
@@ -47,7 +46,7 @@ jobs:
       # WARNING! use only for dedicated runners like Docker. For VM will need to rewrite a filenames to avoid conflicts with pipelines
       - name: temporaryFiles
         run: |
-          git diff --name-only HEAD^ HEAD ${{ github.head_ref }} | grep "packages/" | cut -f2 -d"/" | sed -r '/^$/d' | uniq > /tmp/modifiedPackagesUT;
+          git diff --name-only HEAD^ HEAD ${{ github.ref_name }} | grep "packages/" | cut -f2 -d"/" | sed -r '/^$/d' | uniq > /tmp/modifiedPackagesUT;
           for name in `cat /tmp/modifiedPackagesUT`; do  jq -r '. | "\(.name),"' packages/$name/package.json | tr -d "\n"; \
           done > /tmp/projectsTmpUT; cat /tmp/projectsTmpUT | sed 's/.$//' > /tmp/projectsUT
 
