@@ -9,7 +9,7 @@ on:
 jobs:
   Run_unit_tests:
     name: Running autotests
-    runs-on: [ self-hosted, docker-runner ]
+    runs-on: [ self-hosted, vm-runner ]
     outputs:
       QUERY: ${{ steps.sqlcortage.outputs.QUERY }}
     steps:
@@ -68,7 +68,7 @@ jobs:
 
   Publish_to_db:
     name: publish_to_db
-    runs-on: [ self-hosted, docker-runner ]
+    runs-on: [ self-hosted, vm-runner ]
     needs: Run_unit_tests
     container:
       image: postgres
