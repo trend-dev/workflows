@@ -40,9 +40,6 @@ jobs:
           NODE_AUTH_TOKEN: ${{ secrets.GPT_TOKEN }}
           CI: true
 
-      - name: Run install yarn
-        uses: mskelton/setup-yarn@v1
-
       - name: run tests
         run: |
           npm ci || true
