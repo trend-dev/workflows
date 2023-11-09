@@ -28,7 +28,7 @@ jobs:
       - name: 'Setup jq'
         uses: dcarbone/install-jq-action@v1.0.1
         
-      - name: Run install
+      - name: Run install yarn
         uses: mskelton/setup-yarn@v1
 
       - name: Setup node
