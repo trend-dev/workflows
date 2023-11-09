@@ -42,9 +42,7 @@ jobs:
 
       - name: run tests
         run: |
-          npm ci || true
-          npm i -g yarn && yarn install || true
-          npm i -g yarn && yarn install --ignore-engines || true
+          npm ci
           npm run test
 
       - id: timestamp
