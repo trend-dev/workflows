@@ -10,7 +10,7 @@ jobs:
   slackNotification:
     if: ${{ github.event.inputs.location != 'ta-production' }}
     name: Slack Notification
-    runs-on: [ self-hosted, docker-runner ]
+    runs-on: [ self-hosted, vm-runner ]
     steps:
       - name: Inject slug/short variables
         uses: rlespinasse/github-slug-action@v4
