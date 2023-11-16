@@ -66,13 +66,13 @@ jobs:
           endpoint: builders
 
       # Cache
-#      - name: Cache Docker layers
-#        uses: actions/cache@v3
-#        with:
-#          path: /tmp/.buildx-cache
-#          key: ${{ runner.os }}-buildx-${{ github.sha }}
-#          restore-keys: |
-#            ${{ runner.os }}-buildx-
+      - name: Cache Docker layers
+        uses: actions/cache@v3
+        with:
+          path: /tmp/.buildx-cache
+          key: ${{ runner.os }}-buildx-${{ github.sha }}
+          restore-keys: |
+            ${{ runner.os }}-buildx-
 
       # Login against a Docker registry except on PR
       # https://github.com/docker/login-action
@@ -95,13 +95,15 @@ jobs:
           tags: |
             ${{ inputs.DOCKER_REGISTRY }}/${{ inputs.APP_NAME }}:${{ github.sha }}
             ${{ needs.variables.outputs.IMAGE }}
+          cache-from: type=local,src=/tmp/.buildx-cache
+          cache-to: type=local,dest=/tmp/.buildx-cache-new,mode=max
           build-args: |
             "NPM_TOKEN=${{ secrets.GPT_TOKEN }}"
 
       # Temp fix
       # https://github.com/docker/build-push-action/issues/252
       # https://github.com/moby/buildkit/issues/1896
-#      - name: Move cache
-#        run: |
-#          rm -rf /tmp/.buildx-cache
-#          mv /tmp/.buildx-cache-new /tmp/.buildx-cache
+      - name: Move cache
+        run: |
+          rm -rf /tmp/.buildx-cache
+          mv /tmp/.buildx-cache-new /tmp/.buildx-cache
