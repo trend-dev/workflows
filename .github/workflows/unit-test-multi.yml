@@ -2,6 +2,11 @@ name: Run unit tests for monorepos
 
 on:
   workflow_call:
+    inputs:
+      NODE_VERSION:
+        type: string
+        required: true
+        default: ''
     outputs:
       QUERY:
         value: ${{ jobs.Run_unit_tests.outputs.QUERY }}
@@ -61,7 +66,7 @@ jobs:
         id: node_build
         uses: actions/setup-node@v3
         with:
-          node-version: '16.17.0'
+          node-version: '${{ inputs.NODE_VERSION }}'
           token: ${{ secrets.GPT_TOKEN }}
           registry-url: 'https://npm.pkg.github.com'
 
