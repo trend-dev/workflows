@@ -7,16 +7,13 @@ on:
         value: ${{ jobs.Run_unit_tests.outputs.QUERY }}
       NAMES:
         value: ${{ jobs.parse.outputs.NAMES }}
-      MODPACK:
-        value:  ${{ jobs.parse.outputs.MODPACK }}
 
 jobs:
   parse:
     name: Parse arguments
-    runs-on: [ self-hosted, docker-runner ]
+    runs-on: [ self-hosted, vm-runner ]
     outputs:
-      NAMES: ${{ steps.packagesName.outputs.names }}
-      MODPACK: ${{ steps.modifiedPackagesUT.outputs.modifiedPackagesUT }}
+      NAMES: ${{ steps.packagesName.outputs.NAMES }}
 
     steps:
       - name: 'Setup jq'
@@ -35,9 +32,6 @@ jobs:
           git diff --name-only HEAD^ remotes/origin/${{ github.head_ref }} | grep "packages/" | cut -f2 -d"/" | sed -r '/^$/d' | uniq > /tmp/modifiedPackagesUT
           for name in `cat /tmp/modifiedPackagesUT`; do  jq -r '. | "\(.name),"' packages/$name/package.json | tr -d "\n"; \
           done > /tmp/projectsTmpUT; cat /tmp/projectsTmpUT | sed 's/.$//' > /tmp/projectsUT
-
-      - id: modifiedPackagesUT
-        run: echo "modifiedPackagesUT=$(cat /tmp/modifiedPackagesUT)" >> $GITHUB_OUTPUT
 
       - id: packagesName
         run: |
@@ -82,11 +76,10 @@ jobs:
           NODE_AUTH_TOKEN: ${{ secrets.GPT_TOKEN }}
         run: npm run setup
 
-      - name: get modified Packages
-        run: echo ${{ needs.parse.outputs.MODPACK }} >> /tmp/modifiedPackagesUT
-
       - name: check file
-        run: cat /tmp/modifiedPackagesUT
+        run: | 
+          ls -lah /tmp/modifiedPackagesUT
+          cat /tmp/modifiedPackagesUT
 
       - name: Test
         run: npx nx run-many --target=test --projects=${{ needs.parse.outputs.NAMES }} --parallel=false || true
