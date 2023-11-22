@@ -5,11 +5,51 @@ on:
     outputs:
       QUERY:
         value: ${{ jobs.Run_unit_tests.outputs.QUERY }}
+      NAMES:
+        value: ${{ jobs.parse.outputs.NAMES }}
+      MODPACK:
+        value:  ${{ jobs.parse.outputs.MODPACK }}
 
 jobs:
+  parse:
+    name: Parse arguments
+    runs-on: [ self-hosted, docker-runner ]
+    outputs:
+      NAMES: ${{ steps.packagesName.outputs.names }}
+      MODPACK: ${{ steps.modifiedPackagesUT.outputs.modifiedPackagesUT }}
+
+    steps:
+      - name: 'Setup jq'
+        uses: dcarbone/install-jq-action@v2.1.0
+
+      - name: Checkout main branch
+        uses: actions/checkout@v4
+        with:
+          repository: ${{ github.repository }}
+          fetch-depth: 0
+          ref: 'main'
+
+      # WARNING! use only for dedicated runners like Docker. For VM will need to rewrite a filenames to avoid conflicts with pipelines
+      - name: temporaryFiles
+        run: |
+          git diff --name-only HEAD^ remotes/origin/${{ github.head_ref }} | grep "packages/" | cut -f2 -d"/" | sed -r '/^$/d' | uniq > /tmp/modifiedPackagesUT
+          for name in `cat /tmp/modifiedPackagesUT`; do  jq -r '. | "\(.name),"' packages/$name/package.json | tr -d "\n"; \
+          done > /tmp/projectsTmpUT; cat /tmp/projectsTmpUT | sed 's/.$//' > /tmp/projectsUT
+
+      - id: modifiedPackagesUT
+        run: echo "modifiedPackagesUT=$(cat /tmp/modifiedPackagesUT)" >> $GITHUB_OUTPUT
+
+      - id: packagesName
+        run: |
+          echo "NAMES=$(cat /tmp/projectsUT)" >> $GITHUB_OUTPUT
+
+      - name: names are ${{ steps.packagesName.outputs.NAMES }}
+        run: echo ${{ steps.packagesName.outputs.NAMES }}
+
   Run_unit_tests:
     name: Running autotests
     runs-on: [ self-hosted, vm-runner ]
+    needs: [ parse ]
     outputs:
       QUERY: ${{ steps.sqlcortage.outputs.QUERY }}
     steps:
@@ -18,6 +58,10 @@ jobs:
         with:
           repository: ${{ github.repository }}
           fetch-depth: 0
+          ref: ${{ github.head_ref }}
+
+      - name: 'Setup jq'
+        uses: dcarbone/install-jq-action@v2.1.0
 
       - name: Setup node
         id: node_build
@@ -36,25 +80,16 @@ jobs:
       - name: Install dependencies
         env:
           NODE_AUTH_TOKEN: ${{ secrets.GPT_TOKEN }}
-        run: |
-          npm install -g yarn
-          npm install -g nx@16.8.0
-          yarn install
+        run: npm run setup
 
-      - name: 'Setup jq'
-        uses: dcarbone/install-jq-action@v1.0.1
-      # WARNING! use only for dedicated runners like Docker. For VM will need to rewrite a filenames to avoid conflicts with pipelines
-      - name: temporaryFiles
-        run: |
-          git diff --name-only HEAD^ HEAD ${{ github.ref_name }} | grep "packages/" | cut -f2 -d"/" | sed -r '/^$/d' | uniq > /tmp/modifiedPackagesUT;
-          for name in `cat /tmp/modifiedPackagesUT`; do  jq -r '. | "\(.name),"' packages/$name/package.json | tr -d "\n"; \
-          done > /tmp/projectsTmpUT; cat /tmp/projectsTmpUT | sed 's/.$//' > /tmp/projectsUT
+      - name: get modified Packages
+        run: echo ${{ needs.parse.outputs.MODPACK }} >> /tmp/modifiedPackagesUT
 
-      - id: packagesName
-        run: echo "NAMES=$(cat /tmp/projectsUT)" >> $GITHUB_OUTPUT
+      - name: check file
+        run: cat /tmp/modifiedPackagesUT
 
       - name: Test
-        run: npx nx run-many --target=test --projects=${{ steps.packagesName.outputs.NAMES }} --parallel=false || true
+        run: npx nx run-many --target=test --projects=${{ needs.parse.outputs.NAMES }} --parallel=false || true
 
       - id: coverageInfo
         run: |
@@ -65,16 +100,16 @@ jobs:
 
       - id: sqlcortage
         run: echo "QUERY=$(paste -d ',' /tmp/timestampUT /tmp/servicesUT /tmp/versionUT /tmp/pctUT | sed 's/.*/(&)/' | sed 's/$/,/' | tr -d '\n' | sed 's/.$//')" >> $GITHUB_OUTPUT
-
-  Publish_to_db:
-    name: publish_to_db
-    runs-on: [ self-hosted, vm-runner ]
-    needs: Run_unit_tests
-    container:
-      image: postgres
-    steps:
-      - name: Connect to Postgres
-        run: |
-          echo "${{ needs.Run_unit_tests.outputs.QUERY }}"
-          export PGPASSWORD=${{ secrets.PSQL_ANALYTICS_PW }};
-          psql -h ${{ secrets.PSQL_ANALYTICS_HOST }} -U ${{ secrets.PSQL_ANALYTICS_USER }} -d ${{ secrets.PSQL_ANALYTICS_DB }} -c "INSERT INTO raw.ut_coverage (timestamp, service, version, percent) VALUES ${{ needs.Run_unit_tests.outputs.QUERY }};"
+#
+#  Publish_to_db:
+#    name: publish_to_db
+#    runs-on: [ self-hosted, vm-runner ]
+#    needs: Run_unit_tests
+#    container:
+#      image: postgres
+#    steps:
+#      - name: Connect to Postgres
+#        run: |
+#          echo "${{ needs.Run_unit_tests.outputs.QUERY }}"
+#          export PGPASSWORD=${{ secrets.PSQL_ANALYTICS_PW }};
+#          psql -h ${{ secrets.PSQL_ANALYTICS_HOST }} -U ${{ secrets.PSQL_ANALYTICS_USER }} -d ${{ secrets.PSQL_ANALYTICS_DB }} -c "INSERT INTO raw.ut_coverage (timestamp, service, version, percent) VALUES ${{ needs.Run_unit_tests.outputs.QUERY }};"
