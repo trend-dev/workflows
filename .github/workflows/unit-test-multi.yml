@@ -99,18 +99,15 @@ jobs:
       - id: sqlcortage
         run: echo "QUERY=$(paste -d ',' /tmp/timestampUT /tmp/servicesUT /tmp/versionUT /tmp/pctUT | sed 's/.*/(&)/' | sed 's/$/,/' | tr -d '\n' | sed 's/.$//')" >> $GITHUB_OUTPUT
 
-      - name: echo ${{steps.sqlcortage.outputs.QUERY}}
-        run: echo ${{steps.sqlcortage.outputs.QUERY}}
-#
-#  Publish_to_db:
-#    name: publish_to_db
-#    runs-on: [ self-hosted, vm-runner ]
-#    needs: Run_unit_tests
-#    container:
-#      image: postgres
-#    steps:
-#      - name: Connect to Postgres
-#        run: |
-#          echo "${{ needs.Run_unit_tests.outputs.QUERY }}"
-#          export PGPASSWORD=${{ secrets.PSQL_ANALYTICS_PW }};
-#          psql -h ${{ secrets.PSQL_ANALYTICS_HOST }} -U ${{ secrets.PSQL_ANALYTICS_USER }} -d ${{ secrets.PSQL_ANALYTICS_DB }} -c "INSERT INTO raw.ut_coverage (timestamp, service, version, percent) VALUES ${{ needs.Run_unit_tests.outputs.QUERY }};"
+  Publish_to_db:
+    name: publish_to_db
+    runs-on: [ self-hosted, docker-runner ]
+    needs: Run_unit_tests
+    container:
+      image: postgres
+    steps:
+      - name: Connect to Postgres
+        run: |
+          echo "${{ needs.Run_unit_tests.outputs.QUERY }}"
+          export PGPASSWORD=${{ secrets.PSQL_ANALYTICS_PW }};
+          psql -h ${{ secrets.PSQL_ANALYTICS_HOST }} -U ${{ secrets.PSQL_ANALYTICS_USER }} -d ${{ secrets.PSQL_ANALYTICS_DB }} -c "INSERT INTO raw.ut_coverage (timestamp, service, version, percent) VALUES ${{ needs.Run_unit_tests.outputs.QUERY }};"
