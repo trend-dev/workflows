@@ -1,0 +1,86 @@
+name: Publish packages to github registry
+
+on:
+  workflow_call:
+    inputs:
+      NODE_VERSION:
+        type: string
+        required: true
+        default: ''
+    outputs:
+      NAMES:
+        value: ${{ jobs.parse.outputs.NAMES }}
+
+jobs:
+  parse:
+    name: Parse arguments
+    runs-on: [ self-hosted, vm-runner ]
+    outputs:
+      NAMES: ${{ steps.packagesName.outputs.NAMES }}
+
+    steps:
+      - name: 'Setup jq'
+        uses: dcarbone/install-jq-action@v2.1.0
+
+      - name: Checkout main branch
+        uses: actions/checkout@v4
+        with:
+          repository: ${{ github.repository }}
+          fetch-depth: 0
+          ref: 'main'
+
+      # WARNING! use only for dedicated runners like Docker. For VM will need to rewrite a filenames to avoid conflicts with pipelines
+      - name: temporaryFiles
+        run: |
+          git diff --name-only HEAD^ remotes/origin/${{ github.head_ref }} | grep "packages/" | cut -f2 -d"/" | sed -r '/^$/d' | uniq > /tmp/modifiedPackagesPublish
+          for name in `cat /tmp/modifiedPackagesPublish`; do  jq -r '. | "\(.name),"' packages/$name/package.json | tr -d "\n"; \
+          done > /tmp/projectsTmpPublish; cat /tmp/projectsTmpPublish | sed 's/.$//' > /tmp/projectsPublish
+
+      - id: packagesName
+        run: |
+          echo "NAMES=$(cat /tmp/projectsPublish)" >> $GITHUB_OUTPUT
+
+      - name: names are ${{ steps.packagesName.outputs.NAMES }}
+        run: echo ${{ steps.packagesName.outputs.NAMES }}
+
+  publish_packages:
+    name: Build and Publish packages
+    runs-on: [ self-hosted, vm-runner ]
+    needs: [ parse ]
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          repository: ${{ github.repository }}
+          fetch-depth: 0
+          ref: ${{ github.head_ref }}
+
+      - name: 'Setup jq'
+        uses: dcarbone/install-jq-action@v2.1.0
+
+      - name: Setup node
+        id: node_build
+        uses: actions/setup-node@v3
+        with:
+          node-version: '${{ inputs.NODE_VERSION }}'
+          token: ${{ secrets.GPT_TOKEN }}
+          registry-url: 'https://npm.pkg.github.com'
+
+      - uses: actions/cache@v3
+        id: cache
+        with:
+          path: ./node_modules
+          key: ${{ runner.os }}-node-${{ hashFiles('**/yarn.lock') }}
+
+      - name: Install dependencies
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.GPT_TOKEN }}
+        run: npm run setup
+
+      - name: Build
+        run: nx run-many --target=build:ignore-scripts --projects=${{ needs.parse.outputs.NAMES }} --parallel=false
+
+      - name: Publish
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.GPT_TOKEN }}
+        run: nx run-many --target=publish-packages --projects=${{ needs.parse.outputs.NAMES }} --parallel
