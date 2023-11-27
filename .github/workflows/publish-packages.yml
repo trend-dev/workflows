@@ -83,4 +83,4 @@ jobs:
       - name: Publish
         env:
           NODE_AUTH_TOKEN: ${{ secrets.GPT_TOKEN }}
-        run: nx run-many --target=publish-packages --projects="${{ needs.parse.outputs.NAMES }}" --parallel
+        run: nx run-many --target=publish-package --projects="${{ needs.parse.outputs.NAMES }}" --parallel
