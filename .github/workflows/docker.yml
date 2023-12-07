@@ -18,6 +18,11 @@ on:
         type: string
         required: false
         default: "./tools/Dockerfile"
+      CONTEXT:
+        description: "Context for dockerfile"
+        type: string
+        required: false
+        default: "."
       DOCKER_REGISTRY:
         description: "Docker registry to push image"
         type: string
@@ -89,7 +94,7 @@ jobs:
       - name: Build and push
         uses: docker/build-push-action@v4
         with:
-          context: .
+          context: ${{ inputs.CONTEXT }}
           file: ${{ inputs.DOCKERFILE }}
           push: ${{ github.event_name != 'pull_request' }}
           tags: |
