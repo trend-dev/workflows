@@ -25,6 +25,10 @@ on:
       copyImportmap:
         type: string
         required: false
+    outputs:
+      branch_name:
+        description: "Custom Environment"
+        value: ${{ jobs.deploy.outputs.customEnvironment }}
     secrets:
       TOKEN:
         required: true
@@ -96,6 +100,10 @@ jobs:
             "patterns": [".+.yaml"],
             "depth": 2
             }
+
+      - name: Configuring Namespace in yaml file
+        shell: bash
+        run: sed -i 's|{domain}|${{ steps.getBranchName.outputs.branchName }}${{ steps.getBranchName.outputs.branchName != '' && '.' || '' }}trend-${{ github.event.inputs.namespace }}|g' ./tools/charts/${{ inputs.APP_NAME }}/templates/ingress-dev.yaml
 
       - name: Upgrade env
         shell: bash
