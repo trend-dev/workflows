@@ -38,6 +38,12 @@ on:
         required: true
       KUBE_CONFIG:
         required: true
+      AWS_ACCESS_KEY_ID:
+        required: true
+      AWS_SECRET_ACCESS_KEY:
+        required: true
+      AWS_DEFAULT_REGION:
+        required: true
 
 jobs:
   release:
@@ -123,3 +129,7 @@ jobs:
         if: ${{ github.event.inputs.copyImportmap == 'true' }}
         run: aws --endpoint-url=https://s3.selcdn.ru s3 cp s3://ta_modules/importmap/production s3://ta_modules/importmap/${{ steps.getBranchName.outputs.branchName || inputs.LOCATION }} --recursive
         shell: bash
+        with:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          AWS_DEFAULT_REGION: ${{ secrets.AWS_DEFAULT_REGION }}
