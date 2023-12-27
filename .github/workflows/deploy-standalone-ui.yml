@@ -108,7 +108,8 @@ jobs:
           search_input: |
             {
             "patterns": [".+.yaml"],
-            "depth": 2
+            "files": ["Chart.yaml"],
+            "depth": 1
             }
 
       - name: Configuring Namespace in yaml file
@@ -125,7 +126,7 @@ jobs:
         run: |
           helm registry login -u ${{ secrets.DOCKER_REGISTRY_USER }} -p ${{ secrets.DOCKER_REGISTRY_PASSWORD }} ${{ inputs.DOCKER_REGISTRY }}
           cd ./tools/charts/
-          helm upgrade ${{ inputs.APP_NAME }}-${{ github.ref_name }} ./${{ inputs.APP_NAME }} --install --namespace ${{ inputs.LOCATION }}
+          helm upgrade ${{ inputs.APP_NAME }}-${{ steps.branchName.outputs.branchName }} ./${{ inputs.APP_NAME }} --install --namespace ${{ inputs.LOCATION }}
 
       # Copy importmap.json from production to feature-env-domain
       - name: install AWS
