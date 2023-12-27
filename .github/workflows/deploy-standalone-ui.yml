@@ -103,7 +103,7 @@ jobs:
 
       - name: Configuring Namespace in yaml file
         shell: bash
-        run: sed -i 's|{domain}|${{ steps.getBranchName.outputs.branchName }}${{ steps.getBranchName.outputs.branchName != '' && '.' || '' }}trend-${{ github.event.inputs.namespace }}|g' ./tools/charts/${{ inputs.APP_NAME }}/templates/ingress-dev.yaml
+        run: sed -i 's|(domain)|${{ steps.getBranchName.outputs.branchName }}${{ steps.getBranchName.outputs.branchName != '' && '.' || '' }}trend-${{ github.event.inputs.namespace }}|g' ./tools/charts/${{ inputs.APP_NAME }}/templates/ingress-dev.yaml
 
       - name: Upgrade env
         shell: bash
