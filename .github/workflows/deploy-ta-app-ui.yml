@@ -110,7 +110,7 @@ jobs:
             "depth": 1
             }
 
-      - name: Configuring Namespace in yaml file
+      - name: Configuring variables in manifests
         shell: bash
         run: |
           sed -i 's|(domain)|${{ steps.getBranchName.outputs.branchName }}${{ steps.getBranchName.outputs.branchName != '' && '.' || '' }}|g' ./tools/charts/${{ inputs.APP_NAME }}/templates/ingress-dev.yaml
