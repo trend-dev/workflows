@@ -1,4 +1,4 @@
-name: TA UI deployment
+name: TA APP UI deployment
 
 on:
   workflow_call:
@@ -46,8 +46,6 @@ on:
         required: true
 
 env:
-  # Объявляем название образа
-  APP_PRO_PATH: '/ta_modules/importmap/production/importmap.json'
   # AWS auth
   AWS_ACCESS_KEY_ID: '${{ secrets.AWS_ACCESS_KEY_ID }}'
   AWS_SECRET_ACCESS_KEY: '${{ secrets.AWS_SECRET_ACCESS_KEY }}'
