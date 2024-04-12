@@ -32,7 +32,7 @@ jobs:
       # WARNING! use only for dedicated runners like Docker. For VM will need to rewrite a filenames to avoid conflicts with pipelines
       - name: temporaryFiles
         run: |
-          git diff --name-only HEAD^ remotes/origin/${{ github.head_ref }} | grep "packages/" | cut -f2 -d"/" | sed -r '/^$/d' | uniq > /tmp/modifiedPackagesPublish
+          git diff --name-only HEAD^..HEAD | grep "packages/" | cut -f2 -d"/" | sed -r '/^$/d' | uniq > /tmp/modifiedPackagesPublish
           for name in `cat /tmp/modifiedPackagesPublish`; do  jq -r '. | "\(.name),"' packages/$name/package.json | tr -d "\n"; \
           done > /tmp/projectsTmpPublish; cat /tmp/projectsTmpPublish | sed 's/.$//' > /tmp/projectsPublish
 
