@@ -43,7 +43,7 @@ on:
 jobs:
   variables:
     name: Prepare variables
-    runs-on: [ self-hosted, runner-node ]
+    runs-on: [ self-hosted, docker-runner ]
     outputs:
       IMAGE: ${{ steps.image.outputs.NAME }}
     steps:
