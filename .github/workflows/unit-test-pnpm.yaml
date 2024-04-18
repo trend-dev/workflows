@@ -1,0 +1,85 @@
+name: unit tests and coverage publish
+
+on:
+  workflow_call:
+    outputs:
+      TIMESTAMP:
+        value: ${{ jobs.Run_unit_tests.outputs.TIMESTAMP }}
+      SERVICE:
+        value: ${{ jobs.Run_unit_tests.outputs.SERVICE }}
+      VERSION:
+        value: ${{ jobs.Run_unit_tests.outputs.VERSION }}
+      PERCENT:
+        value: ${{ jobs.Run_unit_tests.outputs.PERCENT }}
+
+jobs:
+  Run_unit_tests:
+    name: Test
+    runs-on: [ self-hosted, docker-runner ]
+    outputs:
+      TIMESTAMP: ${{ steps.timestamp.outputs.TIMESTAMP }}
+      SERVICE: ${{ steps.service.outputs.SERVICE }}
+      VERSION: ${{ steps.version.outputs.VERSION }}
+      PERCENT: ${{ steps.percent.outputs.PERCENT }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: 'Setup jq'
+        uses: dcarbone/install-jq-action@v1.0.1
+
+      - name: Setup node
+        id: node_build
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          registry-url: 'https://npm.pkg.github.com'
+          scope: '@trend-dev'
+          cache: 'pnpm'
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.GPT_TOKEN }}
+          CI: true
+
+      - name: Install dependencies
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.GPT_TOKEN }}
+        run: npm run setup
+
+      - name: run tests
+        run: |
+          npm run test
+
+      - id: timestamp
+        run: echo "TIMESTAMP=$(date +%s)" >> $GITHUB_OUTPUT
+
+      - id: service
+        run: echo "SERVICE=$(cat package.json | jq  -r '.name')" >> $GITHUB_OUTPUT
+
+      - id: version
+        run: echo "VERSION=$(cat package.json | jq  -r '.version')" >> $GITHUB_OUTPUT
+
+      - id: percent
+        run: echo "PERCENT=$(cat coverage/coverage-summary.json | jq '.total.lines.pct')" >> $GITHUB_OUTPUT
+
+  Publish_to_db:
+    name: publish_to_db
+    runs-on: [ self-hosted, docker-runner ]
+    needs: Run_unit_tests
+    if:
+      contains('
+      refs/heads/main
+      refs/heads/master
+      refs/heads/release
+      refs/heads/Release
+      ', github.ref)
+    container:
+      image: ghcr.io/trend-dev/postgres:latest
+    steps:
+      - name: Connect to Postgres
+        run: |
+          echo "${{ needs.Run_unit_tests.outputs.TIMESTAMP }}"
+          echo "${{ needs.Run_unit_tests.outputs.SERVICE }}"
+          echo "${{ needs.Run_unit_tests.outputs.VERSION }}"
+          echo "${{ needs.Run_unit_tests.outputs.PERCENT }}"
+          export PGPASSWORD=${{ secrets.PSQL_ANALYTICS_PW }};
+          psql -h ${{ secrets.PSQL_ANALYTICS_HOST }} -U ${{ secrets.PSQL_ANALYTICS_USER }} -d ${{ secrets.PSQL_ANALYTICS_DB }} -c "INSERT INTO raw.ut_coverage (timestamp, service, version, percent) VALUES ('${{ needs.Run_unit_tests.outputs.TIMESTAMP }}','${{ needs.Run_unit_tests.outputs.SERVICE }}', '${{ needs.Run_unit_tests.outputs.VERSION }}', '${{ needs.Run_unit_tests.outputs.PERCENT }}');"
