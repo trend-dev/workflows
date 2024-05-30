@@ -28,7 +28,7 @@ on:
 
 jobs:
   chart:
-    runs-on: [ self-hosted, docker-runner ]
+    runs-on: [ ubuntu-latest ]
     steps:
       - name: Checkout
         uses: actions/checkout@v4
