@@ -55,8 +55,8 @@ jobs:
   build:
     if: inputs.BUILD == 'true'
     name: Build & push docker image
-#    runs-on: [ self-hosted, docker-runner ]
-    runs-on: [ ubuntu-latest ]
+    runs-on: [ self-hosted, docker-runner ]
+#    runs-on: [ ubuntu-latest ]
     needs: variables
     steps:
       - name: Checkout repository
