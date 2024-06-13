@@ -22,9 +22,9 @@ on:
       useCustom:
         type: string
         required: false
-#      copyImportmap:
-#        type: string
-#        required: false
+      copyModules:
+        type: string
+        required: false
     outputs:
       branch_name:
         description: "Custom Environment"
@@ -38,18 +38,12 @@ on:
         required: true
       KUBE_CONFIG:
         required: true
-#      AWS_ACCESS_KEY_ID:
-#        required: true
-#      AWS_SECRET_ACCESS_KEY:
-#        required: true
-#      AWS_DEFAULT_REGION:
-#        required: true
 
-#env:
-  # AWS auth
-#  AWS_ACCESS_KEY_ID: '${{ secrets.AWS_ACCESS_KEY_ID }}'
-#  AWS_SECRET_ACCESS_KEY: '${{ secrets.AWS_SECRET_ACCESS_KEY }}'
-#  AWS_DEFAULT_REGION: '${{ secrets.AWS_DEFAULT_REGION }}'
+env:
+#   TR AWS auth
+  AWS_ACCESS_KEY_ID: '${{ secrets.AWS_TR_ACCESS_KEY_ID }}'
+  AWS_SECRET_ACCESS_KEY: '${{ secrets.AWS_TR_SECRET_ACCESS_KEY }}'
+  AWS_DEFAULT_REGION: '${{ secrets.AWS_TR_DEFAULT_REGION }}'
 
 jobs:
   release:
@@ -127,15 +121,15 @@ jobs:
           helm registry login -u ${{ secrets.DOCKER_REGISTRY_USER }} -p ${{ secrets.DOCKER_REGISTRY_PASSWORD }} ${{ inputs.DOCKER_REGISTRY }}
           cd ./tools/charts/
           helm upgrade ${{ inputs.APP_NAME }}-${{ steps.branchName.outputs.branchName }} ./${{ inputs.APP_NAME }} --install --namespace ${{ inputs.LOCATION }}
-#
-#      # Copy importmap.json from production to feature-env-domain
-#      - name: install AWS
-#        if: ${{ github.event.inputs.copyImportmap == 'true' }}
-#        uses: unfor19/install-aws-cli-action@master
-#        with:
-#          version: 2
 
-#      - name: Copy importmap from production
-#        if: ${{ github.event.inputs.copyImportmap == 'true' }}
-#        run: aws --endpoint-url=https://s3.selcdn.ru s3 cp s3://ta_modules/importmap/production s3://ta_modules/importmap/${{ steps.getBranchName.outputs.branchName || inputs.LOCATION }} --recursive
-#        shell: bash
+      # Copy modules from production to feature-env-domain on CDN
+      - name: install AWS
+        if: ${{ github.event.inputs.copyModules == 'true' }}
+        uses: unfor19/install-aws-cli-action@master
+        with:
+          version: 2
+
+      - name: Copy modules from production
+        if: ${{ github.event.inputs.copyModules == 'true' }}
+        run: aws --endpoint-url=https://s3.selcdn.ru s3 cp s3://tr-modules/apps/production/ s3://tr-modules/apps/${{ steps.getBranchName.outputs.branchName || inputs.LOCATION }}/ --recursive
+        shell: bash
