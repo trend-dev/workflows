@@ -59,7 +59,7 @@ jobs:
       packages: write
     environment:
       name: staging
-      url: https://${{ steps.getBranchName.outputs.branchName }}${{ steps.getBranchName.outputs.branchName != '' && '.' || '' }}.trendrealty.trend-${{ inputs.LOCATION }}.tech
+      url: https://${{ steps.getBranchName.outputs.branchName }}${{ steps.getBranchName.outputs.branchName != '' && '.' || '' }}trendrealty.trend-${{ inputs.LOCATION }}.tech
     outputs:
       customEnvironment: ${{ steps.getBranchName.outputs.branchName }}
     steps:
