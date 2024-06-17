@@ -1,4 +1,4 @@
-name: TA PRO deploy
+name: PRO deploy
 
 on:
   workflow_call:
@@ -42,7 +42,7 @@ jobs:
       - name: Install Helm
         uses: azure/setup-helm@v4
         with:
-          version: v3.14.0
+          version: v3.14.3
 
       - name: Add Kube config
         shell: bash
