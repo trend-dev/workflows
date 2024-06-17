@@ -111,6 +111,7 @@ jobs:
         shell: bash
         run: |
           sed -i 's|(domain)|${{ steps.getBranchName.outputs.branchName }}${{ steps.getBranchName.outputs.branchName != '' && '.' || '' }}|g' ./tools/charts/${{ inputs.APP_NAME }}/templates/*.yaml
+          sed -i 's|(featurebranch)|${{ steps.getBranchName.outputs.branchName }}|g' ./tools/charts/${{ inputs.APP_NAME }}/templates/*.yaml
 
       - id: branchName
         run: echo "branchName=$(echo ${{ steps.getBranchName.outputs.branchName || inputs.LOCATION }})" >> $GITHUB_OUTPUT
