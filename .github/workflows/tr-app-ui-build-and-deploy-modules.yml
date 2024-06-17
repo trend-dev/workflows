@@ -21,7 +21,7 @@ env:
   APP_GIT_BRANCH_NAME: "${{ github.ref_name }}"
   APP_COMMIT_HASH: '${{ github.sha }}'
   LOCATION: '${{ inputs.namespace }}'
-  APP_LOCAL_PATH: './dist/apps/${{ github.event.inputs.appName }}'
+  APP_LOCAL_PATH: './dist/apps/${{ inputs.appName }}'
   APP_REMOTE_PATH: '/tr-modules/apps'
   CI_CDN_PUBLIC_HOST: 'https://modules.trendrealty.ru'
   # TR AWS auth
@@ -75,8 +75,8 @@ jobs:
       - name: Install dependencies
         run: pnpm install
 
-      - name: Build [${{ github.event.inputs.appName }}] module
-        run: pnpx nx run-many --parallel -t build server -p ${{ github.event.inputs.appName }}
+      - name: Build [${{ inputs.appName }}] module
+        run: pnpx nx run-many --parallel -t build server -p ${{ inputs.appName }}
 
       - id: getBranchName
         if: ${{ github.event.inputs.useCustom == 'true' }}
