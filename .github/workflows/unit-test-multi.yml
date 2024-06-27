@@ -101,7 +101,7 @@ jobs:
 
   Publish_to_db:
     name: publish_to_db
-    runs-on: ubuntu-latest
+    runs-on: [ self-hosted, docker-runner ]
     needs: Run_unit_tests
     container:
       image: postgres
