@@ -28,7 +28,7 @@ on:
 
 jobs:
   dry_run_chart:
-    runs-on: [ self-hosted, docker-runner ]
+    runs-on: ubuntu-latest
     steps:
 
       - name: Install Helm

@@ -53,7 +53,7 @@ env:
 
 jobs:
   release:
-    runs-on: [ self-hosted, docker-runner ]
+    runs-on: ubuntu-latest
     permissions:
       contents: write
       packages: write
