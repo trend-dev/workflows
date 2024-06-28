@@ -2,7 +2,12 @@ name: Get version
 
 on:
   workflow_call:
-    # Map the workflow outputs to job outputs
+    inputs:
+      PACKAGE_JSON_FILE:
+        description: "package.json path"
+        type: string
+        required: false
+        default: "./package.json"
     outputs:
       APP_NAME:
         description: "Application name"
@@ -23,9 +28,9 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
       - id: step1
-        run: echo "name=$(awk -F "\"" '/canonical-name/{print $4; exit}' ./package.json)" >> $GITHUB_OUTPUT
+        run: echo "name=$(awk -F "\"" '/canonical-name/{print $4; exit}' ${{ inputs.PACKAGE_JSON_FILE }})" >> $GITHUB_OUTPUT
       - id: step2
-        run: echo "version=$(awk -F "\"" '/version/{print $4; exit}' ./package.json)" >> $GITHUB_OUTPUT
+        run: echo "version=$(awk -F "\"" '/version/{print $4; exit}' ${{ inputs.PACKAGE_JSON_FILE }})" >> $GITHUB_OUTPUT
       - name: get name
         run: echo ${{ steps.step1.outputs.name }}
       - name: get version
