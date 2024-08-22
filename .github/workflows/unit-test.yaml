@@ -67,8 +67,8 @@ jobs:
       refs/heads/master
       refs/heads/release
       refs/heads/Release
-      refs/pull/
-      ', github.ref)
+      ', github.ref) ||
+      contains( github.ref, 'refs/pull/')
     container:
       image: ghcr.io/trend-dev/postgres:latest
     steps:
