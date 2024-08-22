@@ -24,7 +24,8 @@ jobs:
     steps:
       - name: test
         shell: bash
-        run: echo 'passed'
+        run: |
+          echo ${{ github.ref }}
 
 #      - name: 'Setup jq'
 #        uses: dcarbone/install-jq-action@v1.0.1
