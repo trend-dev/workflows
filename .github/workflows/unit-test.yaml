@@ -69,7 +69,7 @@ jobs:
       refs/heads/master
       refs/heads/release
       refs/heads/Release
-      refs/pull/
+      refs/pull/**/merge
       ', github.ref)
 #    container:
 #      image: ghcr.io/trend-dev/postgres:latest
