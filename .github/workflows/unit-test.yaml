@@ -65,11 +65,7 @@ jobs:
     needs: Run_unit_tests
     if:
       contains('
-      refs/heads/main
-      refs/heads/master
-      refs/heads/release
-      refs/heads/Release
-      refs/pull/**/merge
+      refs/pull/468/merge
       ', github.ref)
 #    container:
 #      image: ghcr.io/trend-dev/postgres:latest
