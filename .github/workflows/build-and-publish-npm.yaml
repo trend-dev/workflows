@@ -38,3 +38,11 @@ jobs:
         run: npm publish
         env:
           NODE_AUTH_TOKEN: ${{ secrets.GPT_TOKEN }}
+
+      - name: push generated types
+        run: |
+          git add -A
+          git commit --amend --no-edit
+          git push https://github.com/${{ github.repository }} ${{ github.ref_name }} --force
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.GPT_TOKEN }}
