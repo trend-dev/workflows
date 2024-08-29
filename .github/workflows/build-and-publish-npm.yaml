@@ -46,8 +46,8 @@ jobs:
 
       - name: push generated types
         run: |
-          git add -A
-          git commit --amend --no-edit
-          git push https://github.com/${{ github.repository }} ${{ github.ref_name }} --force
+          git add src/components/Icon/types.ts 
+          git commit src/components/Icon/types.ts 
+          git push https://github.com/${{ github.repository }} ${{ github.ref_name }}
         env:
           NODE_AUTH_TOKEN: ${{ secrets.GPT_TOKEN }}
