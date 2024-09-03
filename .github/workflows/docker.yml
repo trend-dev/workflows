@@ -101,8 +101,8 @@ jobs:
           tags: |
             ${{ inputs.DOCKER_REGISTRY }}/${{ inputs.APP_NAME }}:${{ github.sha }}
             ${{ needs.variables.outputs.IMAGE }}
-          cache-from: type=gha .
-          cache-to: type=gha .
+          cache-from: type=local,src=/tmp/.buildx-cache
+          cache-to: type=local,dest=/tmp/.buildx-cache-new,mode=max
           build-args: |
             "NPM_TOKEN=${{ secrets.GPT_TOKEN }}"
 
