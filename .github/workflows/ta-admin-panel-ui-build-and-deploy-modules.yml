@@ -17,7 +17,7 @@ env:
   APP_NAME: '${{ inputs.appName }}'
   APP_GIT_BRANCH_NAME: "${{ github.ref_name }}"
   APP_COMMIT_HASH: '${{ github.sha }}'
-  APP_LOCAL_PATH: './dist/${{ github.event.inputs.appName }}'
+  APP_LOCAL_PATH: './dist/${{ inputs.appName }}'
   APP_REMOTE_PATH: '/platform-modules/apps'
   CI_CDN_PUBLIC_HOST: 'https://platform-modules.trendagent.ru'
   # TA Platform AWS auth
