@@ -70,7 +70,7 @@ jobs:
         run: pnpm i
 
       - name: Build [${{ inputs.appName }}] module
-        run: pnpm nx run ${{ github.event.inputs.appName }}:build --verbose
+        run: pnpm nx run ${{ inputs.appName }}:build --verbose
 
       - id: getBranchName
         if: ${{ github.event.inputs.useCustom == 'true' }}
