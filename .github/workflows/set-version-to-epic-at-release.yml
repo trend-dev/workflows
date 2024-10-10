@@ -25,29 +25,29 @@ jobs:
       - name: Get branch name and extract Jira issue ID
         id: extract_issue_id
         run: |
-          echo "Branch name: ${GITHUB_REF_NAME}"
-          ISSUE_ID=$(echo "${GITHUB_REF_NAME}" | grep -oE '[A-Z]+-[0-9]+')
+          echo "Branch name: ${GITHUB_HEAD_REF}"
+          ISSUE_ID=$(echo "${GITHUB_HEAD_REF}" | grep -oE '[A-Z]+-[0-9]+')
           echo "Issue ID: ${ISSUE_ID}"
           echo "jira_issue_id=${ISSUE_ID}" >> $GITHUB_ENV
 
       - name: Create Jira release
         id: creat_jira_release
         run: |
-          PROJECT=$(echo "${GITHUB_REF_NAME}" | grep -oE '[A-Z]+')
+          PROJECT=$(echo "${GITHUB_HEAD_REF}" | grep -oE '[A-Z]+')
           
-          echo "Create Jira release ${{ env.APP_NAME }}-${{ env.APP_VERSION }}. Project $PROJECT"
+          echo "Create Jira release ${{ env.APP_NAME }}-${{ env.APP_VERSION }}. Project ${PROJECT}"
           
           CREATE_RELEASE=$(cat <<EOF
           {
             "description": "Version ${{ env.APP_NAME }}-${{ env.APP_VERSION }} created automatically",
             "name": "${{ env.APP_NAME }}-${{ env.APP_VERSION }}",
-            "project": "$PROJECT",
+            "project": "${PROJECT}",
             "released": true
           }
           EOF
           )
 
-          echo "$CREATE_RELEASE"
+          echo "${CREATE_RELEASE}"
           
           curl --silent \
             --request POST \
@@ -55,7 +55,6 @@ jobs:
             --header "Authorization: Basic ${{ secrets.JIRA_API_KEY }}" \
             --header "Content-Type: application/json" \
             --data "$CREATE_RELEASE"
-
           
           echo "\nVersion: ${{ env.APP_NAME }}-${{ env.APP_VERSION }}"
           echo "jira_version=${{ env.APP_NAME }}-${{ env.APP_VERSION }}" >> $GITHUB_ENV
@@ -63,9 +62,9 @@ jobs:
       - name: Create Jira component
         id: creat_jira_component
         run: |
-          PROJECT=$(echo "${GITHUB_REF_NAME}" | grep -oE '[A-Z]+')
+          PROJECT=$(echo "${GITHUB_HEAD_REF}" | grep -oE '[A-Z]+')
           
-          echo "Create Jira component ${{ env.APP_NAME }}-${{ env.APP_VERSION }}. Project $PROJECT"
+          echo "Create Jira component ${{ env.APP_NAME }}-${{ env.APP_VERSION }}. Project ${PROJECT}"
           
           CREATE_COMPONENT=$(cat <<EOF
           {
@@ -77,7 +76,7 @@ jobs:
           EOF
           )
 
-          echo "CREATE_COMPONENT"
+          echo "${CREATE_COMPONENT}"
           
           curl --silent \
             --request POST \
@@ -85,7 +84,7 @@ jobs:
             --header "Authorization: Basic ${{ secrets.JIRA_API_KEY }}" \
             --header "Content-Type: application/json" \
             --data "$CREATE_COMPONENT"
-
+          
           
           echo "\nComponent: ${{ env.APP_NAME }}"
           echo "jira_component=${{ env.APP_NAME }}" >> $GITHUB_ENV
