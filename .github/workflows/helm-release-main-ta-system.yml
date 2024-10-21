@@ -20,6 +20,11 @@ on:
         type: string
         required: false
         default: "."
+      APP_SYSTEM:
+        description: "Common chart for system"
+        type: string
+        required: true
+        default: ''
       DOCKER_REGISTRY:
         description: "Docker registry for helm chart"
         type: string
@@ -163,83 +168,85 @@ jobs:
           helm package ./
           helm push ${{ needs.version.outputs.APP_NAME }}-${{ needs.version.outputs.APP_VERSION }}.tgz oci://${{ inputs.DOCKER_REGISTRY }}/helm-charts
 
-#
-#  release:
-#    needs: chart
-#    runs-on: [ self-hosted, docker-runner ]
-#    steps:
-#      - name: Checkout
-#        uses: actions/checkout@v4
-#        with:
-#          repository: trend-dev/ta-system
-#          ref: ${{ github.event.inputs.LOCATION }}
-#          fetch-depth: 0
-#          token: ${{ secrets.ROOT_TOKEN }}
-#
-#      - name: Check
-#        run: |
-#          echo ${{ inputs.APP_NAME }}
-#          echo ${{ outputs.APP_VERSION }}
-#
-#      - name: Configure Git
-#        run: |
-#          git config user.name "$GITHUB_ACTOR"
-#          git config user.email "$GITHUB_ACTOR@users.noreply.github.com"
-#
-#      - name: Install Helm
-#        uses: azure/setup-helm@v4
-#        with:
-#          version: v3.14.0
-#
-#      - name: Prepare propertyPath
-#        id: path
-#        run: echo "VALUE=$.dependencies[?(@.name=='${{ inputs.APP_NAME }}')].version" >> $GITHUB_OUTPUT
-#
-#      - name: Add DEV Kube config
-#        if: ${{ github.event.inputs.LOCATION != 'beta' }}
-#        shell: bash
-#        run: |
-#          mkdir -p ~/.kube
-#          echo ${{ secrets.DEV_KUBE_CONFIG }} | base64 -d > ~/.kube/config
-#
-#      - name: Add TR-PRO Kube config
-#        if: ${{ github.event.inputs.LOCATION == 'beta' }}
-#        shell: bash
-#        run: |
-#          mkdir -p ~/.kube
-#          echo ${{ secrets.TR_PROD_KUBE_CONFIG }} | base64 -d > ~/.kube/config
-#
-#      - name: Update Image Version in the related HelmChart values.yaml
-#        if: inputs.APP_VERSION != ''
-#        uses: fjogeleit/yaml-update-action@main
-#        with:
-#          valueFile: 'charts/${{ inputs.APP_SYSTEM }}/Chart.yaml'
-#          propertyPath: ${{ steps.path.outputs.VALUE }}
-#          value: ${{ inputs.APP_VERSION }}
-#          branch: ${{ inputs.LOCATION }}
-#          message: Update ${{ inputs.APP_NAME }} in ${{ inputs.APP_SYSTEM }}
-#          repository: trend-dev/${{ inputs.APP_SYSTEM }}
-#          token: ${{ secrets.TOKEN }}
-#
-#      - name: Upgrade Dev
-#        if: ${{ github.event.inputs.LOCATION != 'beta' }}
-#        shell: bash
-#        run: |
-#          helm registry login -u ${{ secrets.DOCKER_REGISTRY_USER }} -p ${{ secrets.DOCKER_REGISTRY_PASSWORD }} ${{ inputs.DOCKER_REGISTRY }}
-#          cd ./charts/${{ inputs.APP_SYSTEM }}/
-#          helm dependency build ./
-#          helm upgrade ${{ inputs.APP_SYSTEM }} --install --namespace ${{ inputs.LOCATION }} ./
-#
-#      - name: Upgrade beta
-#        if: ${{ github.event.inputs.LOCATION == 'beta' }}
-#        shell: bash
-#        run: |
-#          helm registry login -u ${{ secrets.DOCKER_REGISTRY_USER }} -p ${{ secrets.DOCKER_REGISTRY_PASSWORD }} ${{ inputs.DOCKER_REGISTRY }}
-#          cd ./charts/${{ inputs.APP_SYSTEM }}/
-#          helm dependency build ./
-#          helm upgrade ${{ inputs.APP_SYSTEM }} --install --namespace beta ./
-#
-#      - name: Clear artifacts
-#        shell: bash
-#        run: |
-#          rm -rf ~/.kube
+
+  release:
+    needs: [ version, chart ]
+    runs-on: [ self-hosted, docker-runner ]
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          repository: trend-dev/${{ inputs.APP_SYSTEM }}
+          ref: ${{ github.event.inputs.LOCATION }}
+          fetch-depth: 0
+          token: ${{ secrets.ROOT_TOKEN }}
+
+      - name: Configure Git
+        run: |
+          git config user.name "$GITHUB_ACTOR"
+          git config user.email "$GITHUB_ACTOR@users.noreply.github.com"
+
+      - name: Install Helm
+        uses: azure/setup-helm@v4
+        with:
+          version: v3.14.3
+
+      - name: Prepare propertyPath
+        id: path
+        run: echo "VALUE=$.dependencies[?(@.name=='${{ inputs.APP_NAME }}')].version" >> $GITHUB_OUTPUT
+
+      - name: Add DEV Kube config
+        if: ${{ github.event.inputs.LOCATION != 'beta' }}
+        shell: bash
+        run: |
+          mkdir -p ~/.kube
+          echo ${{ secrets.DEV_KUBE_CONFIG }} | base64 -d > ~/.kube/config
+
+      - name: Update Image Version in the related HelmChart values.yaml
+        if: ${{ needs.version.outputs.APP_VERSION != '' }}
+        uses: fjogeleit/yaml-update-action@main
+        with:
+          valueFile: 'charts/${{ inputs.APP_SYSTEM }}/Chart.yaml'
+          propertyPath: ${{ steps.path.outputs.VALUE }}
+          value: ${{ needs.version.outputs.APP_VERSION }}
+          branch: ${{ inputs.LOCATION }}
+          message: Update ${{ needs.version.outputs.APP_NAME }} in ${{ inputs.APP_SYSTEM }}
+          repository: trend-dev/${{ inputs.APP_SYSTEM }}
+          token: ${{ secrets.ROOT_TOKEN }}
+
+      - name: Upgrade Dev
+        if: ${{ github.event.inputs.LOCATION != 'beta' }}
+        shell: bash
+        run: |
+          helm registry login -u ${{ secrets.DOCKER_REGISTRY_USER }} -p ${{ secrets.DOCKER_REGISTRY_PASSWORD }} ${{ inputs.DOCKER_REGISTRY }}
+          cd ./charts/${{ inputs.APP_SYSTEM }}/
+          helm dependency build ./
+          helm upgrade ${{ inputs.APP_SYSTEM }} --install --namespace ${{ inputs.LOCATION }} ./
+
+      - name: Clear artifacts
+        shell: bash
+        run: |
+          rm -rf ~/.kube
+
+  slackNotification:
+    needs: release
+    if: ${{ github.event.inputs.LOCATION != 'ta-production' }}
+    name: Slack Notification
+    runs-on: [ self-hosted, docker-runner ]
+    steps:
+      - name: Inject slug/short variables
+        uses: rlespinasse/github-slug-action@v4
+
+      - uses: actions/checkout@v4
+      - name: Slack Notification
+        uses: rtCamp/action-slack-notify@v2
+        env:
+          SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK_TA_DEPLOY_CHANNEL }}
+          SLACK_USERNAME: Уведомление об успешности развертывания проекта
+          SLACK_COLOR: ${{ job.status }}
+          SLACK_TITLE: ${{ github.repository }}
+          SLACK_MESSAGE: |
+            Окружение: ${{ github.event.inputs.LOCATION }}
+            Ветка: ${{ env.GITHUB_REF_SLUG }}
+          SLACK_ICON_EMOJI: ":white_check_mark:"
+          MSG_MINIMAL: true
