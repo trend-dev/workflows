@@ -162,7 +162,7 @@ jobs:
           cd './tools/charts/${{ needs.version.outputs.APP_NAME }}'
           helm registry login -u ${{ secrets.DOCKER_REGISTRY_USER }} -p ${{ secrets.DOCKER_REGISTRY_PASSWORD }} ${{ inputs.DOCKER_REGISTRY }}
           helm package ./
-          helm push ${{ needs.version.outputs.APP_NAME }}:${{ needs.version.outputs.APP_VERSION }}-${{ github.sha }}.tgz oci://${{ inputs.DOCKER_REGISTRY }}/helm-charts
+          helm push ${{ needs.version.outputs.APP_NAME }}-${{ needs.version.outputs.APP_VERSION }}-${{ github.sha }}.tgz oci://${{ inputs.DOCKER_REGISTRY }}/helm-charts
 
 
   release:
@@ -189,7 +189,7 @@ jobs:
 
       - name: Prepare propertyPath
         id: path
-        run: echo "VALUE=$.dependencies[?(@.name=='${{ needs.version.outputs.APP_NAME }}-${{ github.sha }}')].version" >> $GITHUB_OUTPUT
+        run: echo "VALUE=$.dependencies[?(@.name=='${{ needs.version.outputs.APP_NAME }}')].version" >> $GITHUB_OUTPUT
 
       - name: Add DEV Kube config
         if: ${{ github.event.inputs.LOCATION != 'beta' }}
