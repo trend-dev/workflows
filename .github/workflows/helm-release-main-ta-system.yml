@@ -45,8 +45,8 @@ on:
         required: true
       DOCKER_REGISTRY_PASSWORD:
         required: true
-      TR_PROD_KUBE_CONFIG:
-        required: false
+      GPT_TOKEN:
+        required: true
 
 jobs:
   version:
