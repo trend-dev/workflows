@@ -283,5 +283,5 @@ jobs:
         shell: bash
         run: |
           helm registry login -u ${{ secrets.DOCKER_REGISTRY_USER }} -p ${{ secrets.DOCKER_REGISTRY_PASSWORD }} ${{ inputs.DOCKER_REGISTRY }}
-          cd ./tools/charts/
+          helm pull oci://${{ inputs.DOCKER_REGISTRY }}/helm-charts/${{ needs.version.outputs.APP_NAME }} --version ${{ needs.version.outputs.APP_VERSION }}  --untar
           helm install ${{ needs.version.outputs.APP_NAME }}  ./${{ needs.version.outputs.APP_NAME }} --dry-run -n ${{ github.event.inputs.LOCATION }}
