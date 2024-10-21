@@ -52,6 +52,7 @@ jobs:
     outputs:
       APP_NAME: ${{ steps.step1.outputs.name }}
       APP_VERSION: ${{ steps.step2.outputs.version }}
+      NAME: ${{ steps.step3.outputs.NAME }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -59,30 +60,22 @@ jobs:
         run: echo "name=$(awk -F "\"" '/name/{print $4; exit}' ./package.json)" >> $GITHUB_OUTPUT
       - id: step2
         run: echo "version=$(awk -F "\"" '/version/{print $4; exit}' ./package.json)" >> $GITHUB_OUTPUT
+      - id: step3
+        run: echo "NAME=${{ inputs.DOCKER_REGISTRY }}/${{ steps.step1.outputs.name }}:${{ steps.step2.outputs.version }}-${{ github.sha }}" >> $GITHUB_OUTPUT
       - name: get name
         run: echo ${{ steps.step1.outputs.name }}
       - name: get version
         run: echo ${{ steps.step2.outputs.version }}
+      - name: image name
+        run: echo ${{ steps.step3.outputs.NAME }}
       - name: release version is ${{ steps.step1.outputs.name }}-${{ github.sha }}
         run: echo ${{ steps.step1.outputs.name }}:${{ steps.step2.outputs.version }}-${{ github.sha }}
-
-  variables:
-    needs: version
-    name: Prepare variables
-    runs-on: [ self-hosted, docker-runner ]
-    outputs:
-      IMAGE: ${{ steps.image.outputs.NAME }}
-    steps:
-      - id: image
-        run: echo "NAME=${{ inputs.DOCKER_REGISTRY }}/${{ needs.version.outputs.APP_NAME }}:${{ needs.version.outputs.APP_VERSION }}-${{ github.sha }}" >> $GITHUB_OUTPUT
-      - name: name of image
-        run: echo ${{ steps.image.outputs.NAME }}
 
   build:
     if: inputs.BUILD == 'true'
     name: Build & push docker image
     runs-on: [ self-hosted, docker-runner ]
-    needs: [version, variables ]
+    needs: [version ]
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -120,14 +113,14 @@ jobs:
           push: ${{ github.event_name != 'pull_request' }}
           tags: |
             ${{ inputs.DOCKER_REGISTRY }}/${{ needs.version.outputs.APP_NAME }}:${{ github.sha }}
-            ${{ needs.variables.outputs.IMAGE }}
+            ${{ needs.version.outputs.IMAGE }}
           cache-from: type=local,src=/tmp/.buildx-cache
           cache-to: type=local,dest=/tmp/.buildx-cache,mode=max
           build-args: |
             "NPM_TOKEN=${{ secrets.GPT_TOKEN }}"
 
   chart:
-    needs: [ build, version, variables ]
+    needs: [ version, build ]
     runs-on: [ self-hosted, docker-runner ]
     steps:
       - name: Checkout
