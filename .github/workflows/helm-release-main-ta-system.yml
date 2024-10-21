@@ -30,6 +30,10 @@ on:
         type: string
         required: false
         default: "docker-registry.trendagent.ru:5000"
+      DRY_RUN:
+        description: "Generate manifests"
+        type: string
+        required: false
     outputs:
 #      APP_VERSION:
 #        description: "Application version"
@@ -250,3 +254,34 @@ jobs:
             Ветка: ${{ env.GITHUB_REF_SLUG }}
           SLACK_ICON_EMOJI: ":white_check_mark:"
           MSG_MINIMAL: true
+
+  dry_run_chart:
+    needs: [ version, chart ]
+    if: inputs.DRY_RUN == 'true'
+    runs-on: [ self-hosted, docker-runner ]
+
+    steps:
+      - name: Install Helm
+        uses: azure/setup-helm@v4
+        with:
+          version: v3.14.3
+
+      - name: Log into Docker registry
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ inputs.DOCKER_REGISTRY }}
+          username: ${{ secrets.DOCKER_REGISTRY_USER }}
+          password: ${{ secrets.DOCKER_REGISTRY_PASSWORD }}
+
+      - name: Add Kube config
+        shell: bash
+        run: |
+          mkdir -p ~/.kube
+          echo ${{ secrets.RUNNERS_KUBE_CONFIG }} | base64 -d > ~/.kube/config
+
+      - name: Dry run
+        shell: bash
+        run: |
+          helm registry login -u ${{ secrets.DOCKER_REGISTRY_USER }} -p ${{ secrets.DOCKER_REGISTRY_PASSWORD }} ${{ inputs.DOCKER_REGISTRY }}
+          cd ./tools/charts/
+          helm install ${{ needs.version.outputs.APP_NAME }}  ./${{ needs.version.outputs.APP_NAME }} --dry-run -n ${{ github.event.inputs.LOCATION }}
