@@ -39,7 +39,7 @@ on:
     secrets:
       DEV_KUBE_CONFIG:
         required: false
-      TOKEN:
+      ROOT_TOKEN:
         required: true
       DOCKER_REGISTRY_USER:
         required: true
@@ -180,7 +180,7 @@ jobs:
 #          repository: trend-dev/ta-system
 #          ref: ${{ github.event.inputs.LOCATION }}
 #          fetch-depth: 0
-#          token: ${{ secrets.TOKEN }}
+#          token: ${{ secrets.ROOT_TOKEN }}
 #
 #      - name: Check
 #        run: |
