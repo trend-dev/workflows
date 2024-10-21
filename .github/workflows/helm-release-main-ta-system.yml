@@ -167,7 +167,7 @@ jobs:
           cd './tools/charts/${{ inputs.APP_NAME }}'
           helm registry login -u ${{ secrets.DOCKER_REGISTRY_USER }} -p ${{ secrets.DOCKER_REGISTRY_PASSWORD }} ${{ inputs.DOCKER_REGISTRY }}
           helm package ./
-          helm push ${{ inputs.APP_NAME }}-${{ ouputs.APP_VERSION }}.tgz oci://${{ inputs.DOCKER_REGISTRY }}/helm-charts
+          helm push ${{ inputs.APP_NAME }}-${{ outputs.APP_VERSION }}.tgz oci://${{ inputs.DOCKER_REGISTRY }}/helm-charts
 
 #
 #  release:
