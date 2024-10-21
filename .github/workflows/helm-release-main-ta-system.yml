@@ -34,13 +34,6 @@ on:
         description: "Generate manifests"
         type: string
         required: false
-    outputs:
-#      APP_VERSION:
-#        description: "Application version"
-#        value: ${{ jobs.version.outputs.APP_VERSION }}
-      IMAGE:
-        description: "Docker image name"
-        value: ${{ jobs.variables.outputs.IMAGE }}
     secrets:
       DEV_KUBE_CONFIG:
         required: false
@@ -57,7 +50,6 @@ jobs:
   version:
     name: Get version
     runs-on: [ self-hosted, docker-runner ]
-    # Map the job outputs to step outputs
     outputs:
       APP_NAME: ${{ steps.step1.outputs.name }}
       APP_VERSION: ${{ steps.step2.outputs.version }}
@@ -77,7 +69,7 @@ jobs:
         run: echo ${{ steps.step2.outputs.version }}
       - name: image name
         run: echo ${{ steps.step3.outputs.NAME }}
-      - name: release version is ${{ steps.step1.outputs.name }}-${{ github.sha }}
+      - name: release version is ${{ steps.step1.outputs.name }}:${{ steps.step2.outputs.version }}-${{ github.sha }}
         run: echo ${{ steps.step1.outputs.name }}:${{ steps.step2.outputs.version }}-${{ github.sha }}
 
   build:
@@ -153,7 +145,7 @@ jobs:
         uses: trend-dev/inplace-envsubst-action@main
         env:
           APP_NAME: ${{ needs.version.outputs.APP_NAME }}
-          APP_VERSION: ${{ needs.version.outputs.APP_VERSION }}
+          APP_VERSION: ${{ needs.version.outputs.APP_VERSION }}-${{ github.sha }}
         with:
           working-directory: './tools/charts/${{ needs.version.outputs.APP_NAME }}'
           fail_on_missing_variables: "true"
@@ -170,7 +162,7 @@ jobs:
           cd './tools/charts/${{ needs.version.outputs.APP_NAME }}'
           helm registry login -u ${{ secrets.DOCKER_REGISTRY_USER }} -p ${{ secrets.DOCKER_REGISTRY_PASSWORD }} ${{ inputs.DOCKER_REGISTRY }}
           helm package ./
-          helm push ${{ needs.version.outputs.APP_NAME }}-${{ needs.version.outputs.APP_VERSION }}.tgz oci://${{ inputs.DOCKER_REGISTRY }}/helm-charts
+          helm push ${{ needs.version.outputs.APP_NAME }}-${{ needs.version.outputs.APP_VERSION }}-${{ github.sha }}.tgz oci://${{ inputs.DOCKER_REGISTRY }}/helm-charts
 
 
   release:
@@ -197,7 +189,7 @@ jobs:
 
       - name: Prepare propertyPath
         id: path
-        run: echo "VALUE=$.dependencies[?(@.name=='${{ needs.version.outputs.APP_NAME }}')].version" >> $GITHUB_OUTPUT
+        run: echo "VALUE=$.dependencies[?(@.name=='${{ needs.version.outputs.APP_NAME }}-${{ github.sha }}')].version" >> $GITHUB_OUTPUT
 
       - name: Add DEV Kube config
         if: ${{ github.event.inputs.LOCATION != 'beta' }}
@@ -212,7 +204,7 @@ jobs:
         with:
           valueFile: 'charts/${{ inputs.APP_SYSTEM }}/Chart.yaml'
           propertyPath: ${{ steps.path.outputs.VALUE }}
-          value: ${{ needs.version.outputs.APP_VERSION }}
+          value: ${{ needs.version.outputs.APP_VERSION }}-${{ github.sha }}
           branch: ${{ github.event.inputs.LOCATION }}
           message: Update ${{ needs.version.outputs.APP_NAME }} in ${{ inputs.APP_SYSTEM }}
           repository: trend-dev/${{ inputs.APP_SYSTEM }}
@@ -283,5 +275,5 @@ jobs:
         shell: bash
         run: |
           helm registry login -u ${{ secrets.DOCKER_REGISTRY_USER }} -p ${{ secrets.DOCKER_REGISTRY_PASSWORD }} ${{ inputs.DOCKER_REGISTRY }}
-          helm pull oci://${{ inputs.DOCKER_REGISTRY }}/helm-charts/${{ needs.version.outputs.APP_NAME }} --version ${{ needs.version.outputs.APP_VERSION }}  --untar
+          helm pull oci://${{ inputs.DOCKER_REGISTRY }}/helm-charts/${{ needs.version.outputs.APP_NAME }} --version ${{ needs.version.outputs.APP_VERSION }}-${{ github.sha }}  --untar
           helm install ${{ needs.version.outputs.APP_NAME }}  ./${{ needs.version.outputs.APP_NAME }} --dry-run -n ${{ github.event.inputs.LOCATION }}
