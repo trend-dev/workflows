@@ -193,7 +193,7 @@ jobs:
 
       - name: Prepare propertyPath
         id: path
-        run: echo "VALUE=$.dependencies[?(@.name=='${{ inputs.APP_NAME }}')].version" >> $GITHUB_OUTPUT
+        run: echo "VALUE=$.dependencies[?(@.name=='${{ needs.version.outputs.APP_NAME }}')].version" >> $GITHUB_OUTPUT
 
       - name: Add DEV Kube config
         if: ${{ github.event.inputs.LOCATION != 'beta' }}
