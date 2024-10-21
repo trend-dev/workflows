@@ -53,7 +53,7 @@ jobs:
     outputs:
       APP_NAME: ${{ steps.step1.outputs.name }}
       APP_VERSION: ${{ steps.step2.outputs.version }}
-      NAME: ${{ steps.step3.outputs.NAME }}
+      IMAGE: ${{ steps.step3.outputs.IMAGE }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -62,7 +62,7 @@ jobs:
       - id: step2
         run: echo "version=$(awk -F "\"" '/version/{print $4; exit}' ./package.json)" >> $GITHUB_OUTPUT
       - id: step3
-        run: echo "NAME=${{ inputs.DOCKER_REGISTRY }}/${{ steps.step1.outputs.name }}:${{ steps.step2.outputs.version }}-${{ github.sha }}" >> $GITHUB_OUTPUT
+        run: echo "IMAGE=${{ inputs.DOCKER_REGISTRY }}/${{ steps.step1.outputs.name }}:${{ steps.step2.outputs.version }}-${{ github.sha }}" >> $GITHUB_OUTPUT
       - name: get name
         run: echo ${{ steps.step1.outputs.name }}
       - name: get version
