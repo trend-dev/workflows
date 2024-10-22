@@ -110,7 +110,7 @@ jobs:
     with:
       APP_NAME: ${{ needs.version.outputs.APP_NAME }}
       APP_VERSION: '${{ needs.version.outputs.APP_VERSION }}-${{ github.sha }}'
-      LOCATION: ${{ github.event.inputs.LOCATION }}
+      LOCATION: ${{ inputs.LOCATION }}
       APP_SYSTEM: ${{ inputs.APP_SYSTEM }}
     secrets:
       TOKEN: ${{ secrets.ROOT_TOKEN }}
