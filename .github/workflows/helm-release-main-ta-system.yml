@@ -10,7 +10,7 @@ on:
         description: "Actual boolean flag to make build docker image, BUT BEWARE IT IS PASSING AS STRING"
         type: string
         required: false
-      RUN_TESTS:
+      TEST:
         description: "Run unit tests"
         type: string
         required: false
@@ -49,6 +49,8 @@ on:
         required: true
       GPT_TOKEN:
         required: true
+      JIRA_API_KEY:
+        required: true
 
 jobs:
   version:
@@ -77,6 +79,15 @@ jobs:
       APP_NAME: ${{ needs.version.outputs.APP_NAME }}
       APP_VERSION: '${{ needs.version.outputs.APP_VERSION }}-${{ github.sha }}'
       CHART_FOLDER: './tools/charts/${{ needs.version.outputs.APP_NAME }}'
+    secrets: inherit
+
+  jira_version:
+    if: github.event.pull_request.merged == true
+    needs: [ version ]
+    uses: trend-dev/workflows/.github/workflows/set-version-to-jira-at-release.yml@master
+    with:
+      app_version: ${{ needs.version.outputs.APP_VERSION }}
+      app_name: ${{ needs.version.outputs.APP_NAME }}
     secrets: inherit
 
   dry_run:
