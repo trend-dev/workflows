@@ -1,0 +1,125 @@
+name: Helm Release TA system
+
+on:
+  workflow_call:
+    inputs:
+      LOCATION:
+        type: string
+        required: true
+      BUILD:
+        description: "Actual boolean flag to make build docker image, BUT BEWARE IT IS PASSING AS STRING"
+        type: string
+        required: false
+      TEST:
+        description: "Run unit tests"
+        type: string
+        required: false
+      DOCKERFILE:
+        description: "Dockerfile path relative to context"
+        type: string
+        required: false
+        default: "./tools/Dockerfile"
+      CONTEXT:
+        description: "Context for dockerfile"
+        type: string
+        required: false
+        default: "."
+      APP_SYSTEM:
+        description: "Common chart for system"
+        type: string
+        required: true
+        default: ''
+      DOCKER_REGISTRY:
+        description: "Docker registry for helm chart"
+        type: string
+        required: false
+        default: "docker-registry.trendagent.ru:5000"
+      DRY_RUN:
+        description: "Generate manifests"
+        type: string
+        required: false
+    secrets:
+      DEV_KUBE_CONFIG:
+        required: false
+      ROOT_TOKEN:
+        required: true
+      DOCKER_REGISTRY_USER:
+        required: true
+      DOCKER_REGISTRY_PASSWORD:
+        required: true
+      GPT_TOKEN:
+        required: true
+      JIRA_API_KEY:
+        required: true
+
+jobs:
+  version:
+    uses: trend-dev/workflows/.github/workflows/version.yml@master
+
+  test:
+    if: github.event.inputs.RUN_TESTS == 'true'
+    needs: version
+    uses: trend-dev/workflows/.github/workflows/unit-test.yaml@master
+    secrets: inherit
+
+  docker:
+    needs: [ version ]
+    uses: trend-dev/workflows/.github/workflows/docker.yml@master
+    with:
+      APP_NAME: ${{ needs.version.outputs.APP_NAME }}
+      APP_VERSION: ${{ needs.version.outputs.APP_VERSION }}
+      BUILD: ${{ github.event.inputs.BUILD }}
+      DOCKERFILE: './tools/Dockerfile'
+    secrets: inherit
+
+  chart:
+    needs: [ version, docker ]
+    uses: trend-dev/workflows/.github/workflows/chart.yml@master
+    with:
+      APP_NAME: ${{ needs.version.outputs.APP_NAME }}
+      APP_VERSION: '${{ needs.version.outputs.APP_VERSION }}-${{ github.sha }}'
+      CHART_FOLDER: './tools/charts/${{ needs.version.outputs.APP_NAME }}'
+    secrets: inherit
+
+  jira_version:
+    if: github.event.pull_request.merged == true
+    needs: [ version ]
+    uses: trend-dev/workflows/.github/workflows/set-version-to-jira-at-release.yml@united-pipeline-ta-system
+    with:
+      APP_VERSION: ${{ needs.version.outputs.APP_VERSION }}
+      APP_NAME: ${{ needs.version.outputs.APP_NAME }}
+    secrets: inherit
+
+  dry_run:
+    if: github.event.inputs.DRY_RUN == 'true'
+    needs: [ version, docker, chart ]
+    uses: trend-dev/workflows/.github/workflows/dry-run.yml@master
+    with:
+      APP_NAME: ${{ needs.version.outputs.APP_NAME }}
+      APP_VERSION: '${{ needs.version.outputs.APP_VERSION }}-${{ github.sha }}'
+      LOCATION: ${{ github.event.inputs.LOCATION }}
+    secrets:
+      KUBE_CONFIG: ${{ secrets.RUNNERS_KUBE_CONFIG }}
+      DOCKER_REGISTRY_USER: ${{ secrets.DOCKER_REGISTRY_USER }}
+      DOCKER_REGISTRY_PASSWORD: ${{ secrets.DOCKER_REGISTRY_PASSWORD }}
+
+  release_to_dev:
+    if: github.event.inputs.LOCATION != 'none'
+    needs: [ version, chart ]
+    uses: trend-dev/workflows/.github/workflows/helm-release.yml@master
+    with:
+      APP_NAME: ${{ needs.version.outputs.APP_NAME }}
+      APP_VERSION: '${{ needs.version.outputs.APP_VERSION }}-${{ github.sha }}'
+      LOCATION: ${{ inputs.LOCATION }}
+      APP_SYSTEM: ${{ inputs.APP_SYSTEM }}
+    secrets:
+      TOKEN: ${{ secrets.ROOT_TOKEN }}
+      DEV_KUBE_CONFIG: ${{ secrets.DEV_KUBE_CONFIG }}
+      DOCKER_REGISTRY_USER: ${{ secrets.DOCKER_REGISTRY_USER }}
+      DOCKER_REGISTRY_PASSWORD: ${{ secrets.DOCKER_REGISTRY_PASSWORD }}
+
+  notification:
+    needs: [ release_to_dev ]
+    uses: trend-dev/workflows/.github/workflows/notification.yml@master
+    secrets:
+      SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK_TA_DEPLOY_CHANNEL }}

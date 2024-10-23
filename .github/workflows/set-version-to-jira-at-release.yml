@@ -2,11 +2,11 @@ name: Set version to JIRA task at release
 on:
   workflow_call:
     inputs:
-      app_version:
+      APP_VERSION:
         description: "Application version"
         required: true
         type: string
-      app_name:
+      APP_NAME:
         description: "Application name"
         required: true
         type: string
@@ -19,9 +19,6 @@ jobs:
     runs-on: [ self-hosted, docker-runner ]
 
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v3
-
       - name: Get branch name and extract Jira issue ID
         id: extract_issue_id
         run: |
@@ -131,5 +128,5 @@ jobs:
           fi
 
     env:
-      APP_VERSION: ${{ inputs.app_version }}
-      APP_NAME: ${{ inputs.app_name }}
+      APP_VERSION: ${{ inputs.APP_VERSION }}
+      APP_NAME: ${{ inputs.APP_NAME }}
