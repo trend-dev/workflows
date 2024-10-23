@@ -19,9 +19,6 @@ jobs:
     runs-on: [ self-hosted, docker-runner ]
 
     steps:
-#      - name: Checkout repository
-#        uses: actions/checkout@v3
-
       - name: Get branch name and extract Jira issue ID
         id: extract_issue_id
         run: |
