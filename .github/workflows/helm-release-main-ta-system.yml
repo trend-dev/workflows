@@ -84,7 +84,7 @@ jobs:
   jira_version:
     if: github.event.pull_request.merged == true
     needs: [ version ]
-    uses: trend-dev/workflows/.github/workflows/set-version-to-jira-at-release.yml@master
+    uses: trend-dev/workflows/.github/workflows/set-version-to-jira-at-release.yml@united-pipeline-ta-system
     with:
       APP_VERSION: ${{ needs.version.outputs.APP_VERSION }}
       APP_NAME: ${{ needs.version.outputs.APP_NAME }}
