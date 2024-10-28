@@ -10,6 +10,7 @@ on:
         description: "Actual boolean flag to make build docker image, BUT BEWARE IT IS PASSING AS STRING"
         type: string
         required: false
+        default: true
       TEST:
         description: "Run unit tests"
         type: string
