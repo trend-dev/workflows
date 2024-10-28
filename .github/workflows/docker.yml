@@ -54,7 +54,7 @@ jobs:
         run: echo ${{ steps.image.outputs.NAME }}
 
   build:
-    if: inputs.BUILD == 'true'
+    if: github.event.inputs.BUILD == 'true'
     name: Build & push docker image
     runs-on: [ self-hosted, docker-runner ]
 #    runs-on: [ ubuntu-latest ]
