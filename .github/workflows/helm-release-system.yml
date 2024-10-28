@@ -69,7 +69,7 @@ jobs:
     with:
       APP_NAME: ${{ needs.version.outputs.APP_NAME }}
       APP_VERSION: ${{ needs.version.outputs.APP_VERSION }}
-      BUILD: ${{ github.event.inputs.BUILD }}
+      BUILD: ${{ inputs.BUILD }}
       DOCKERFILE: './tools/Dockerfile'
     secrets: inherit
 
