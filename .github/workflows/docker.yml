@@ -95,10 +95,10 @@ jobs:
       # https://github.com/docker/build-push-action
       - name: Build and push
         uses: docker/build-push-action@v5
-        with: true
+        with:
           context: ${{ inputs.CONTEXT }}
           file: ${{ inputs.DOCKERFILE }}
-          push:
+          push: 'true'
           tags: |
             ${{ inputs.DOCKER_REGISTRY }}/${{ inputs.APP_NAME }}:${{ github.sha }}
             ${{ needs.variables.outputs.IMAGE }}
