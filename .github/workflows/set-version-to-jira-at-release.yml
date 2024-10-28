@@ -1,4 +1,4 @@
-name: Set version to JIRA task at release
+name: Set version to JIRA epic at release
 on:
   workflow_call:
     inputs:
