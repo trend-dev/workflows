@@ -58,7 +58,7 @@ jobs:
         id: build
         run: |
           BUILD=${{ github.event.inputs.BUILD }}
-          echo "BUILD=${{BUILD:-'true'}}" >> $GITHUB_OUTPUT
+          echo "BUILD=${BUILD:-"true"}" >> "$GITHUB_OUTPUT"
 
   build:
     if: ${{ needs.variables.outputs.BUILD  == 'true' }}
