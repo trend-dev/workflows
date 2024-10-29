@@ -65,7 +65,7 @@ jobs:
 
   docker:
     needs: [ version ]
-    uses: trend-dev/workflows/.github/workflows/docker.yml@master
+    uses: trend-dev/workflows/.github/workflows/docker.yml@united-pipeline-ta-system
     with:
       APP_NAME: ${{ needs.version.outputs.APP_NAME }}
       APP_VERSION: ${{ needs.version.outputs.APP_VERSION }}
