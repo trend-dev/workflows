@@ -28,6 +28,9 @@ jobs:
       - name: 'Setup jq'
         uses: dcarbone/install-jq-action@v1.0.1
 
+      - name: install pnpm
+        uses: pnpm/action-setup@v4
+
       - name: Setup node
         id: node_build
         uses: actions/setup-node@v4
