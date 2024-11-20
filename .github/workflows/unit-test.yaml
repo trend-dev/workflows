@@ -47,7 +47,7 @@ jobs:
 
       - name: run tests
         run: |
-          npm ci || npm i --legacy-peer-deps || true
+          npm run setup
           npm run test
 
       - id: timestamp
