@@ -42,7 +42,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           repository: trend-dev/${{ inputs.APP_SYSTEM }}
-          ref: ${{ github.event.inputs.LOCATION }}
+          ref: ${{ inputs.LOCATION }}
           fetch-depth: 0
           token: ${{ secrets.TOKEN }}
 
