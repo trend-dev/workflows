@@ -111,7 +111,7 @@ jobs:
           helm dependency build ./
           helm upgrade ${{ inputs.APP_SYSTEM }} --install --namespace beta ./
 
-      - name: Clear artifacts
-        shell: bash
-        run: |
-          rm -rf ~/.kube
+#      - name: Clear artifacts
+#        shell: bash
+#        run: |
+#          rm -rf ~/.kube
