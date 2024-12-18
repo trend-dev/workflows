@@ -38,29 +38,16 @@ jobs:
   release:
     runs-on: [ self-hosted, docker-runner ]
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-        with:
-          repository: trend-dev/${{ inputs.APP_SYSTEM }}
-          ref: ${{ inputs.LOCATION }}
-          fetch-depth: 0
-          token: ${{ secrets.TOKEN }}
-
       - name: Check
         run: |
           echo ${{ inputs.APP_NAME }}
           echo ${{ inputs.APP_VERSION }}
           echo ${{ inputs.APP_SYSTEM }}
 
-      - name: Configure Git
-        run: |
-          git config user.name "$GITHUB_ACTOR"
-          git config user.email "$GITHUB_ACTOR@users.noreply.github.com"
-
       - name: Install Helm
         uses: azure/setup-helm@v4
         with:
-          version: v3.14.0
+          version: v3.14.3
 
       - name: Prepare propertyPath
         id: path
@@ -79,6 +66,19 @@ jobs:
         run: |
           mkdir -p ~/.kube
           echo ${{ secrets.TR_PROD_KUBE_CONFIG }} | base64 -d > ~/.kube/config
+
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          repository: trend-dev/${{ inputs.APP_SYSTEM }}
+          ref: ${{ inputs.LOCATION }}
+          fetch-depth: 0
+          token: ${{ secrets.TOKEN }}
+
+      - name: Configure Git
+        run: |
+          git config user.name "$GITHUB_ACTOR"
+          git config user.email "$GITHUB_ACTOR@users.noreply.github.com"
 
       - name: Update Image Version in the related HelmChart values.yaml
         if: inputs.APP_VERSION != ''
@@ -110,7 +110,7 @@ jobs:
           helm dependency build ./
           helm upgrade ${{ inputs.APP_SYSTEM }} --install --namespace beta ./
 
-      - name: Clear artifacts
-        shell: bash
-        run: |
-          rm -rf ~/.kube
+#      - name: Clear artifacts
+#        shell: bash
+#        run: |
+#          rm -rf ~/.kube

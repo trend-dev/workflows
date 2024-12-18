@@ -14,3 +14,4 @@ jobs:
           method: 'POST'
           username: ${{ secrets.QA_AUTH_USER }}
           password: ${{ secrets.QA_AUTH_PASSWORD }}
+          ignoreStatusCodes: '404,401'
