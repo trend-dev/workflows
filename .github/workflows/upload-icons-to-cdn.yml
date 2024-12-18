@@ -1,0 +1,54 @@
+name: Upload icons to CDN and publish npm
+
+on:
+  workflow_call:
+
+jobs:
+  build:
+    runs-on: [ self-hosted, docker-runner ]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          registry-url: 'https://npm.pkg.github.com'
+
+      - name: Configure Git
+        run: |
+          git config user.name "$GITHUB_ACTOR"
+          git config user.email "$GITHUB_ACTOR@users.noreply.github.com"
+
+      - name: Install dependencies
+        run: npm run setup
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.GPT_TOKEN }}
+
+      - name: Generate typification
+        run: npm run generate-icons-type
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.GPT_TOKEN }}
+
+      - name: Upload to CDN
+        uses: unfor19/install-aws-cli-action@master
+        with:
+          version: 2
+      - run: aws --endpoint-url= 'https://s3.ru-1.storage.selcloud.ru' s3 sync icons/svg s3://ta_modules/icons/svg/
+        shell: bash
+        env:
+          AWS_ACCESS_KEY_ID: '${{ secrets.CI_AWS_LOGIN }}'
+          AWS_SECRET_ACCESS_KEY: '${{ secrets.CI_AWS_PASSWORD }}'
+          AWS_DEFAULT_REGION: '${{ secrets.CI_AWS_REGION }}'
+          REQUESTS_CA_BUNDLE: "/etc/ssl/certs/ca-certificates.crt"
+
+      - name: Publish npm
+        run: npm publish
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.GPT_TOKEN }}
+
+      - name: push generated types
+        run: |
+          git add src/components/Icon/types.ts 
+          git commit -m 'types.ts has been updated' src/components/Icon/types.ts 
+          git push https://github.com/${{ github.repository }} ${{ github.ref_name }}
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.GPT_TOKEN }}
