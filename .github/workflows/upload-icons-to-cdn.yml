@@ -2,12 +2,34 @@ name: Upload icons to CDN and publish npm
 
 on:
   workflow_call:
+    secrets:
+      TOKEN:
+        required: true
+      NODE_AUTH_TOKEN:
+        required: true
+      AWS_ACCESS_KEY_ID:
+        required: true
+      AWS_SECRET_ACCESS_KEY:
+        required: true
+      AWS_DEFAULT_REGION:
+        required: true
+
+env:
+  # AWS auth
+  AWS_ACCESS_KEY_ID: '${{ secrets.AWS_ACCESS_KEY_ID }}'
+  AWS_SECRET_ACCESS_KEY: '${{ secrets.AWS_SECRET_ACCESS_KEY }}'
+  AWS_DEFAULT_REGION: '${{ secrets.AWS_DEFAULT_REGION }}'
+  REQUESTS_CA_BUNDLE: "/etc/ssl/certs/ca-certificates.crt"
+  NODE_AUTH_TOKEN: ${{ secrets.NODE_AUTH_TOKEN }}
 
 jobs:
   build:
     runs-on: [ self-hosted, docker-runner ]
     steps:
       - uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.TOKEN }}
+
       - uses: actions/setup-node@v4
         with:
           node-version: 20
@@ -20,13 +42,9 @@ jobs:
 
       - name: Install dependencies
         run: npm run setup
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.GPT_TOKEN }}
 
       - name: Generate typification
         run: npm run generate-icons-type
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.GPT_TOKEN }}
 
       - name: Upload to CDN
         uses: unfor19/install-aws-cli-action@master
@@ -35,21 +53,12 @@ jobs:
 
       - run: aws --endpoint-url='https://s3.ru-1.storage.selcloud.ru' s3 sync icons/svg s3://ta_modules/icons/svg/
         shell: bash
-        env:
-          AWS_ACCESS_KEY_ID: '${{ secrets.CI_AWS_LOGIN }}'
-          AWS_SECRET_ACCESS_KEY: '${{ secrets.CI_AWS_PASSWORD }}'
-          AWS_DEFAULT_REGION: '${{ secrets.CI_AWS_REGION }}'
-          REQUESTS_CA_BUNDLE: "/etc/ssl/certs/ca-certificates.crt"
 
       - name: Publish npm
         run: npm publish
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.GPT_TOKEN }}
 
       - name: push generated types
         run: |
           git add src/components/Icon/types.ts 
           git commit -m 'types.ts has been updated' src/components/Icon/types.ts 
           git push https://github.com/${{ github.repository }} ${{ github.ref_name }} --force
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.GPT_TOKEN }}
