@@ -50,6 +50,6 @@ jobs:
         run: |
           git add src/components/Icon/types.ts 
           git commit -m 'types.ts has been updated' src/components/Icon/types.ts 
-          git push https://github.com/${{ github.repository }} ${{ github.ref_name }}
+          git push https://github.com/${{ github.repository }} ${{ github.ref_name }} --force
         env:
           NODE_AUTH_TOKEN: ${{ secrets.GPT_TOKEN }}
