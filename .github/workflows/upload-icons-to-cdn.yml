@@ -32,13 +32,14 @@ jobs:
         uses: unfor19/install-aws-cli-action@master
         with:
           version: 2
+
+      - run: aws --endpoint-url='https://s3.ru-1.storage.selcloud.ru' s3 sync icons/svg s3://ta_modules/icons/svg/
+        shell: bash
         env:
           AWS_ACCESS_KEY_ID: '${{ secrets.CI_AWS_LOGIN }}'
           AWS_SECRET_ACCESS_KEY: '${{ secrets.CI_AWS_PASSWORD }}'
           AWS_DEFAULT_REGION: '${{ secrets.CI_AWS_REGION }}'
           REQUESTS_CA_BUNDLE: "/etc/ssl/certs/ca-certificates.crt"
-      - run: aws --endpoint-url='https://s3.ru-1.storage.selcloud.ru' s3 sync icons/svg s3://ta_modules/icons/svg/
-        shell: bash
 
       - name: Publish npm
         run: npm publish
