@@ -134,9 +134,9 @@ jobs:
       # Copy modules from production to feature-env-domain on CDN
       - name: install AWS
         if: ${{ github.event.inputs.copyModules == 'true' }}
-        uses: unfor19/install-aws-cli-action@master
-        with:
-          version: 2
+        run: |
+          sudo apt update && sudo apt install awscli -y
+        shell: bash
 
       - name: Copy modules from production
         if: ${{ github.event.inputs.copyModules == 'true' }}
