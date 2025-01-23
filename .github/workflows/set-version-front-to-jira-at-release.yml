@@ -59,7 +59,7 @@ jobs:
       - name: Create Jira component
         id: creat_jira_component
         run: |
-          PROJECT=$(echo "${GITHUB_REF_NAME}" | grep -oE '[A-Z]+' | tr [:lower:] [:upper:])
+          PROJECT=$(echo "${GITHUB_REF_NAME}" | cut -f2 -d '/' | grep -oE '[a-z]+' | tr [:lower:] [:upper:])
           
           echo "Create Jira component ${{ env.APP_NAME }}-${{ env.APP_VERSION }}. Project ${PROJECT}"
           
