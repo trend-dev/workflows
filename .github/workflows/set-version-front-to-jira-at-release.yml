@@ -22,15 +22,15 @@ jobs:
       - name: Get branch name and extract Jira issue ID
         id: extract_issue_id
         run: |
-          echo "Branch name: ${GITHUB_HEAD_REF}"
-          ISSUE_ID=$(echo "${GITHUB_HEAD_REF}" | grep -oE '[a-z]+-[0-9]+')
+          echo "Branch name: ${GITHUB_REF_NAME}"
+          ISSUE_ID=$(echo "${GITHUB_REF_NAME}" | grep -oE '[a-z]+-[0-9]+')
           echo "Issue ID: ${ISSUE_ID}"
           echo "jira_issue_id=${ISSUE_ID}" >> $GITHUB_ENV
 
       - name: Create Jira release
         id: creat_jira_release
         run: |
-          PROJECT=$(echo "${GITHUB_HEAD_REF}" | cut -f2 -d '/' | grep -oE '[a-z]+')
+          PROJECT=$(echo "${GITHUB_REF_NAME}" | cut -f2 -d '/' | grep -oE '[a-z]+')
           
           echo "Create Jira release ${{ env.APP_NAME }}-${{ env.APP_VERSION }}. Project ${PROJECT}"
           
@@ -59,7 +59,7 @@ jobs:
       - name: Create Jira component
         id: creat_jira_component
         run: |
-          PROJECT=$(echo "${GITHUB_HEAD_REF}" | grep -oE '[A-Z]+')
+          PROJECT=$(echo "${GITHUB_REF_NAME}" | grep -oE '[A-Z]+')
           
           echo "Create Jira component ${{ env.APP_NAME }}-${{ env.APP_VERSION }}. Project ${PROJECT}"
           
