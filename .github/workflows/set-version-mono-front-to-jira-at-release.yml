@@ -19,6 +19,21 @@ jobs:
     runs-on: [ self-hosted, docker-runner ]
 
     steps:
+
+      - name: Get project code
+        id: get_project_code
+        run: |
+          echo "Repo name: ${{ github.event.repository.name }}"
+          PROJECT_CODE=$(echo "${{ github.event.repository.name }}" | awk -F '-' '{print $1}')
+          if [[ $PROJECT_CODE == "ta" ]]; then
+            PROJECT='TRA'
+          else
+            PROJECT='TRR'
+          fi
+
+          echo "PROJECT=${PROJECT}" >> $GITHUB_ENV
+          echo "Project Code: ${PROJECT}"
+
       - name: Get branch name and extract Jira issue ID
         id: extract_issue_id
         run: |
@@ -30,63 +45,60 @@ jobs:
       - name: Create Jira release
         id: creat_jira_release
         run: |
-          PROJECT=$(echo "${GITHUB_REF_NAME}" | cut -f2 -d '/' | grep -oE '[a-z]+' | tr [:lower:] [:upper:])
-          
-          echo "Create Jira release ${{ env.APP_NAME }}-${{ env.APP_VERSION }}. Project ${PROJECT}"
-          
+          echo "Create Jira release ${{ env.APP_NAME }}-${{ env.APP_VERSION }}. Project ${{ env.PROJECT }}"
+
           CREATE_RELEASE=$(cat <<EOF
           {
             "description": "Version ${{ env.APP_NAME }}-${{ env.APP_VERSION }} created automatically",
             "name": "${{ env.APP_NAME }}-${{ env.APP_VERSION }}",
-            "project": "${PROJECT}",
+            "project": "${{ env.PROJECT }}",
             "released": true
           }
           EOF
           )
 
           echo "${CREATE_RELEASE}"
-          
+
           curl --silent \
             --request POST \
             --url "https://trend-it.atlassian.net/rest/api/3/version" \
             --header "Authorization: Basic ${{ secrets.JIRA_API_KEY }}" \
             --header "Content-Type: application/json" \
             --data "$CREATE_RELEASE"
-          
+
           echo "\nVersion: ${{ env.APP_NAME }}-${{ env.APP_VERSION }}"
           echo "jira_version=${{ env.APP_NAME }}-${{ env.APP_VERSION }}" >> $GITHUB_ENV
 
       - name: Create Jira component
         id: creat_jira_component
         run: |
-          PROJECT=$(echo "${GITHUB_REF_NAME}" | cut -f2 -d '/' | grep -oE '[a-z]+' | tr [:lower:] [:upper:])
-          
-          echo "Create Jira component ${{ env.APP_NAME }}-${{ env.APP_VERSION }}. Project ${PROJECT}"
-          
+          echo "Create Jira component ${{ env.APP_NAME }}-${{ env.APP_VERSION }}. Project ${{ env.PROJECT }}"
+
           CREATE_COMPONENT=$(cat <<EOF
           {
             "description": "Component ${{ env.APP_NAME }} created automatically",
             "name": "${{ env.APP_NAME }}",
-            "project": "$PROJECT",
+            "project": "${{ env.PROJECT }}",
             "assigneeType": "PROJECT_LEAD"
           }
           EOF
           )
 
           echo "${CREATE_COMPONENT}"
-          
+
           curl --silent \
             --request POST \
             --url "https://trend-it.atlassian.net/rest/api/3/component" \
             --header "Authorization: Basic ${{ secrets.JIRA_API_KEY }}" \
             --header "Content-Type: application/json" \
             --data "$CREATE_COMPONENT"
-          
-          
+
+
           echo "\nComponent: ${{ env.APP_NAME }}"
           echo "jira_component=${{ env.APP_NAME }}" >> $GITHUB_ENV
 
       - name: Update Jira issue with Fix Versions
+        if: ${{ env.jira_issue_id != '' }}
         id: update_jira
         run: |
           echo "Updating Jira issue ${{ env.jira_issue_id }} with Fix Version ${{ env.APP_NAME }}-${{ env.APP_VERSION }}"
