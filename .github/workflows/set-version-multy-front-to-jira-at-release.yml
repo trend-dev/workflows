@@ -61,7 +61,7 @@ jobs:
             "description": "Version ${{ env.APP_NAME }}/${{ inputs.PACKAGE_NAME }}-${{ env.PACKAGE_VERSION }} created automatically",
             "name": "${{ env.APP_NAME }}/${{ inputs.PACKAGE_NAME }}-${{ env.PACKAGE_VERSION }}",
             "project": "${{ env.PROJECT }}",
-            "released": true
+            "released": false
           }
           EOF
           )
