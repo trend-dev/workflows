@@ -82,9 +82,10 @@ jobs:
       - id: branchName
         run: echo "branchName=$(echo ${{ steps.getBranchName.outputs.branchName || inputs.namespace }})" >> $GITHUB_OUTPUT
 
-      - name: Upload to CDN
-        uses: unfor19/install-aws-cli-action@master
-        with:
-          version: 2
+      - name: install AWS cli
+        run: |
+          sudo apt update && sudo apt install awscli -y
+        shell: bash
+
       - run: aws --endpoint-url=https://s3.ru-1.storage.selcloud.ru s3 cp '${{ env.APP_LOCAL_PATH }}' s3:/${{ env.APP_REMOTE_PATH }}/${{ steps.branchName.outputs.branchName }}/${{ env.APP_NAME }} --recursive
         shell: bash
