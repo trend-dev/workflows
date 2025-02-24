@@ -55,6 +55,7 @@ on:
 
 jobs:
   version:
+    if: github.event.inputs.LOCATION || github.event.pull_request.merged == true
     uses: trend-dev/workflows/.github/workflows/version.yml@master
 
   test:
