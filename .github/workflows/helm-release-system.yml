@@ -65,6 +65,7 @@ jobs:
     secrets: inherit
 
   docker:
+    if: inputs.BUILD == 'true'
     needs: [ version ]
     uses: trend-dev/workflows/.github/workflows/docker.yml@master
     with:
