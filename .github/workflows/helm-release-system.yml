@@ -94,7 +94,7 @@ jobs:
 
   dry_run:
     if: inputs.DRY_RUN == 'true'
-    needs: [ chart ]
+    needs: [ version, chart ]
     uses: trend-dev/workflows/.github/workflows/dry-run.yml@master
     with:
       APP_NAME: ${{ needs.version.outputs.APP_NAME }}
@@ -106,7 +106,7 @@ jobs:
       DOCKER_REGISTRY_PASSWORD: ${{ secrets.DOCKER_REGISTRY_PASSWORD }}
 
   release_to_dev:
-    needs: [ docker, chart ]
+    needs: [ version, docker, chart ]
     if: always() && !cancelled() && !failure()
     uses: trend-dev/workflows/.github/workflows/helm-release.yml@master
     with:
