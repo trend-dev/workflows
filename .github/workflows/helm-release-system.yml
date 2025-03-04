@@ -75,7 +75,7 @@ jobs:
     secrets: inherit
 
   chart:
-    needs: [ version, docker ]
+    needs: [ version ]
     uses: trend-dev/workflows/.github/workflows/chart.yml@master
     with:
       APP_NAME: ${{ needs.version.outputs.APP_NAME }}
@@ -94,7 +94,7 @@ jobs:
 
   dry_run:
     if: inputs.DRY_RUN == 'true'
-    needs: [ version, docker, chart ]
+    needs: [ chart ]
     uses: trend-dev/workflows/.github/workflows/dry-run.yml@master
     with:
       APP_NAME: ${{ needs.version.outputs.APP_NAME }}
@@ -106,8 +106,8 @@ jobs:
       DOCKER_REGISTRY_PASSWORD: ${{ secrets.DOCKER_REGISTRY_PASSWORD }}
 
   release_to_dev:
-    if: inputs.LOCATION != 'none'
-    needs: [ version, chart ]
+    needs: [ docker, chart ]
+    if: always() && !cancelled() && !failure()
     uses: trend-dev/workflows/.github/workflows/helm-release.yml@master
     with:
       APP_NAME: ${{ needs.version.outputs.APP_NAME }}
