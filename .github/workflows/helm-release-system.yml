@@ -107,7 +107,7 @@ jobs:
 
   release_to_dev:
     needs: [ version, docker, chart ]
-    if: always() && !cancelled() && !failure()
+    if: always() && !cancelled() && !failure() && inputs.DRY_RUN != 'true'
     uses: trend-dev/workflows/.github/workflows/helm-release.yml@master
     with:
       APP_NAME: ${{ needs.version.outputs.APP_NAME }}
