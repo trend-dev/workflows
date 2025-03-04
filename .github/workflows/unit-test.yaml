@@ -61,14 +61,7 @@ jobs:
     name: publish_to_db
     runs-on: [ self-hosted, docker-runner ]
     needs: Run_unit_tests
-    if:
-      contains('
-      refs/heads/main
-      refs/heads/master
-      refs/heads/release
-      refs/heads/Release
-      ', github.ref) ||
-      contains( github.ref, 'refs/pull/')
+    if: contains(${{github.base_ref}}, fromJSON('["main", "master", "release", "Release"]'))
     container:
       image: ghcr.io/trend-dev/postgres:latest
     steps:
