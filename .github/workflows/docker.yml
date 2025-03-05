@@ -54,8 +54,14 @@ jobs:
       - name: name of image
         run: echo ${{ steps.image.outputs.NAME }}
 
+      - name: set build flag
+        id: build
+        run: |
+          BUILD=${{ inputs.BUILD }}
+          echo "BUILD=${BUILD:-"true"}" >> "$GITHUB_OUTPUT"
+
   build:
-    if: ${{ inputs.BUILD  == 'true' }}
+    if: ${{ needs.variables.outputs.BUILD  == 'true' }}
     name: Build & push docker image
     runs-on: [ self-hosted, docker-runner ]
 #    runs-on: [ ubuntu-latest ]
