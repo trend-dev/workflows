@@ -35,7 +35,6 @@ jobs:
           node-version: '20'
           registry-url: 'https://npm.pkg.github.com'
           scope: '@trend-dev'
-          cache: 'npm'
         env:
           NODE_AUTH_TOKEN: ${{ secrets.GPT_TOKEN }}
           CI: true
