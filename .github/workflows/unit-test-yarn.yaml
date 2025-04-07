@@ -28,21 +28,23 @@ jobs:
       - name: 'Setup jq'
         uses: dcarbone/install-jq-action@v1.0.1
 
+      - name: install pnpm
+        uses: pnpm/action-setup@v4
+
       - name: Setup node
         id: node_build
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version: 20
           registry-url: 'https://npm.pkg.github.com'
           scope: '@trend-dev'
+          cache: 'pnpm'
         env:
           NODE_AUTH_TOKEN: ${{ secrets.GPT_TOKEN }}
           CI: true
 
       - name: Install dependencies
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.GPT_TOKEN }}
-        run: npm run setup
+        run: pnpm install
 
       - name: run tests
         run: npm run test
