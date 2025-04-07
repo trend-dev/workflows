@@ -44,6 +44,8 @@ jobs:
           CI: true
 
       - name: Install dependencies
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.GPT_TOKEN }}
         run: pnpm install
 
       - name: run tests
