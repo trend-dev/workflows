@@ -91,7 +91,7 @@ jobs:
           cat /tmp/modifiedPackagesUTtr
 
       - name: Tests
-        run: npx nx run-many --target=test --projects=${{ needs.parse.outputs.NAMES }} --parallel=false || true
+        run: npx nx run-many --target=test --projects=${{ needs.parse.outputs.NAMES }} --coverage --parallel=false || true
 
       - id: coverageInfo
         run: |
