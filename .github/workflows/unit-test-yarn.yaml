@@ -95,7 +95,7 @@ jobs:
 
       - id: coverageInfo
         run: |
-          for names in `cat /tmp/modifiedPackagesUTtr`; do cat apps/$names/package.json | awk '{total="tr-app-ui/"$0;print total}' | sed -e "s/.*/'&'/"; done > /tmp/servicesUTtr
+          for names in `cat /tmp/modifiedPackagesUTtr`; do cat apps/$names/package.json | jq  -r '.name' | awk '{total="tr-app-ui/"$0;print total}' |  sed -e "s/.*/'&'/"; done > /tmp/servicesUTtr
           for names in `cat /tmp/modifiedPackagesUTtr`; do cat apps/$names/coverage/coverage-summary.json | jq '.total.lines.pct' | sed -e "s/.*/'&'/"; done > /tmp/pctUTtr
           for names in `cat /tmp/modifiedPackagesUTtr`; do cat apps/$names/package.json | jq  -r '.version' | sed -e "s/.*/'&'/"; done > /tmp/versionUTtr
           for names in `cat /tmp/modifiedPackagesUTtr`; do echo `date +%s` | sed -e "s/.*/'&'/"; done > /tmp/timestampUTtr
