@@ -2,40 +2,71 @@ name: unit tests and coverage publish
 
 on:
   workflow_call:
+    inputs:
+      NODE_VERSION:
+        type: string
+        required: true
+        default: ''
     outputs:
-      TIMESTAMP:
-        value: ${{ jobs.Run_unit_tests.outputs.TIMESTAMP }}
-      SERVICE:
-        value: ${{ jobs.Run_unit_tests.outputs.SERVICE }}
-      VERSION:
-        value: ${{ jobs.Run_unit_tests.outputs.VERSION }}
-      PERCENT:
-        value: ${{ jobs.Run_unit_tests.outputs.PERCENT }}
+      QUERY:
+        value: ${{ jobs.Run_unit_tests.outputs.QUERY }}
+      NAMES:
+        value: ${{ jobs.parse.outputs.NAMES }}
 
 jobs:
-  Run_unit_tests:
-    name: Test
+  parse:
+    name: Parse arguments
     runs-on: [ self-hosted, vm-runner ]
     outputs:
-      TIMESTAMP: ${{ steps.timestamp.outputs.TIMESTAMP }}
-      SERVICE: ${{ steps.service.outputs.SERVICE }}
-      VERSION: ${{ steps.version.outputs.VERSION }}
-      PERCENT: ${{ steps.percent.outputs.PERCENT }}
+      NAMES: ${{ steps.packagesName.outputs.NAMES }}
+
+    steps:
+      - name: 'Setup jq'
+        uses: dcarbone/install-jq-action@v3
+
+      - name: Checkout main branch
+        uses: actions/checkout@v4
+        with:
+          repository: ${{ github.repository }}
+          fetch-depth: 0
+          ref: 'main'
+
+      # WARNING! use only for dedicated runners like Docker. For VM will need to rewrite a filenames to avoid conflicts with pipelines
+      - name: temporaryFiles
+        run: |
+          git diff --name-only HEAD^..HEAD | grep "apps/" | cut -f2 -d"/" | sed -r '/^$/d' | uniq > /tmp/modifiedPackagesUTtr
+          for name in `cat /tmp/modifiedPackagesUTtr`; do  jq -r '. | "\(.name),"' apps/$name/package.json | tr -d "\n"; \
+          done > /tmp/projectsTmpUTtr; cat /tmp/projectsTmpUTtr | sed 's/.$//' > /tmp/projectsUTtr
+
+      - id: packagesName
+        run: |
+          echo "NAMES=$(cat /tmp/projectsUTtr)" >> $GITHUB_OUTPUT
+
+      - name: names are ${{ steps.packagesName.outputs.NAMES }}
+        run: echo ${{ steps.packagesName.outputs.NAMES }}
+
+  Run_unit_tests:
+    name: Running autotests
+    runs-on: [ self-hosted, vm-runner ]
+    needs: [ parse ]
+    outputs:
+      QUERY: ${{ steps.sqlcortage.outputs.QUERY }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+        with:
+          repository: ${{ github.repository }}
+          fetch-depth: 0
+          ref: 'main'
 
       - name: 'Setup jq'
-        uses: dcarbone/install-jq-action@v1.0.1
-
-      - name: install pnpm
-        uses: pnpm/action-setup@v4
+        uses: dcarbone/install-jq-action@v3
 
       - name: Setup node
         id: node_build
         uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: '${{ inputs.NODE_VERSION }}'
           registry-url: 'https://npm.pkg.github.com'
           scope: '@trend-dev'
           cache: 'pnpm'
@@ -43,45 +74,44 @@ jobs:
           NODE_AUTH_TOKEN: ${{ secrets.GPT_TOKEN }}
           CI: true
 
+      - uses: actions/cache@v4
+        id: cache
+        with:
+          path: ./node_modules
+          key: ${{ runner.os }}-node-${{ hashFiles('**/yarn.lock') }}
+
       - name: Install dependencies
         env:
           NODE_AUTH_TOKEN: ${{ secrets.GPT_TOKEN }}
         run: pnpm install
 
-      - name: run tests
-        run: npm run test
+      - name: check file
+        run: |
+          ls -lah /tmp/modifiedPackagesUTtr
+          cat /tmp/modifiedPackagesUTtr
 
-      - id: timestamp
-        run: echo "TIMESTAMP=$(date +%s)" >> $GITHUB_OUTPUT
+      - name: Tests
+        run: npx nx run-many --target=test --projects=${{ needs.parse.outputs.NAMES }} --parallel=false || true
 
-      - id: service
-        run: echo "SERVICE=$(cat package.json | jq  -r '.name')" >> $GITHUB_OUTPUT
+      - id: coverageInfo
+        run: |
+          for names in `cat /tmp/modifiedPackagesUTtr`; do cat apps/$names/package.json | awk '{total="tr-app-ui/"$0;print total}' | sed -e "s/.*/'&'/"; done > /tmp/servicesUTtr
+          for names in `cat /tmp/modifiedPackagesUTtr`; do cat apps/$names/coverage/coverage-summary.json | jq '.total.lines.pct' | sed -e "s/.*/'&'/"; done > /tmp/pctUTtr
+          for names in `cat /tmp/modifiedPackagesUTtr`; do cat apps/$names/package.json | jq  -r '.version' | sed -e "s/.*/'&'/"; done > /tmp/versionUTtr
+          for names in `cat /tmp/modifiedPackagesUTtr`; do echo `date +%s` | sed -e "s/.*/'&'/"; done > /tmp/timestampUTtr
 
-      - id: version
-        run: echo "VERSION=$(cat package.json | jq  -r '.version')" >> $GITHUB_OUTPUT
-
-      - id: percent
-        run: echo "PERCENT=$(cat coverage/coverage-summary.json | jq '.total.lines.pct')" >> $GITHUB_OUTPUT
+      - id: sqlcortage
+        run: echo "QUERY=$(paste -d ',' /tmp/timestampUTtr /tmp/servicesUTtr /tmp/versionUTtr /tmp/pctUTtr | sed 's/.*/(&)/' | sed 's/$/,/' | tr -d '\n' | sed 's/.$//')" >> $GITHUB_OUTPUT
 
   Publish_to_db:
     name: publish_to_db
     runs-on: [ self-hosted, docker-runner ]
     needs: Run_unit_tests
-    if:
-      contains('
-      refs/heads/main
-      refs/heads/master
-      refs/heads/release
-      refs/heads/Release
-      ', github.ref)
     container:
-      image: ghcr.io/trend-dev/postgres:latest
+      image: postgres
     steps:
       - name: Connect to Postgres
         run: |
-          echo "${{ needs.Run_unit_tests.outputs.TIMESTAMP }}"
-          echo "${{ needs.Run_unit_tests.outputs.SERVICE }}"
-          echo "${{ needs.Run_unit_tests.outputs.VERSION }}"
-          echo "${{ needs.Run_unit_tests.outputs.PERCENT }}"
+          echo "${{ needs.Run_unit_tests.outputs.QUERY }}"
           export PGPASSWORD=${{ secrets.PSQL_ANALYTICS_PW }};
-          psql -h ${{ secrets.PSQL_ANALYTICS_HOST }} -U ${{ secrets.PSQL_ANALYTICS_USER }} -d ${{ secrets.PSQL_ANALYTICS_DB }} -c "INSERT INTO raw.ut_coverage (timestamp, service, version, percent) VALUES ('${{ needs.Run_unit_tests.outputs.TIMESTAMP }}','${{ needs.Run_unit_tests.outputs.SERVICE }}', '${{ needs.Run_unit_tests.outputs.VERSION }}', '${{ needs.Run_unit_tests.outputs.PERCENT }}');"
+          psql -h ${{ secrets.PSQL_ANALYTICS_HOST }} -U ${{ secrets.PSQL_ANALYTICS_USER }} -d ${{ secrets.PSQL_ANALYTICS_DB }} -c "INSERT INTO raw.ut_coverage (timestamp, service, version, percent) VALUES ${{ needs.Run_unit_tests.outputs.QUERY }};"
