@@ -29,7 +29,8 @@ env:
 jobs:
   build_and_deploy:
     name: Build and deploy to CDN
-    runs-on: [ self-hosted, docker-runner ]
+    runs-on: [ ubuntu-latest ]
+#    runs-on: [ self-hosted, docker-runner ]
     permissions:
       contents: read
       packages: write
@@ -82,10 +83,10 @@ jobs:
       - id: branchName
         run: echo "branchName=$(echo ${{ steps.getBranchName.outputs.branchName || inputs.namespace }})" >> $GITHUB_OUTPUT
 
-      - name: install AWS cli
-        run: |
-          sudo apt update && sudo apt install awscli -y
-        shell: bash
+#      - name: install AWS cli
+#        run: |
+#          sudo apt update && sudo apt install awscli -y
+#        shell: bash
 
       - run: aws --endpoint-url=https://s3.ru-1.storage.selcloud.ru s3 cp '${{ env.APP_LOCAL_PATH }}' s3:/${{ env.APP_REMOTE_PATH }}/${{ steps.branchName.outputs.branchName }}/${{ env.APP_NAME }} --recursive
         shell: bash
