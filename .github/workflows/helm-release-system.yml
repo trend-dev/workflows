@@ -59,7 +59,7 @@ jobs:
     uses: trend-dev/workflows/.github/workflows/version.yml@master
 
   test:
-    if: inputs.TEST == 'true'
+    if: inputs.TEST == 'true' && github.event.pull_request.merged == true
     needs: version
     uses: trend-dev/workflows/.github/workflows/unit-test.yaml@master
     secrets: inherit
