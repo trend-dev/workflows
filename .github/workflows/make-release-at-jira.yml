@@ -32,7 +32,7 @@ jobs:
       - name: Create Jira component
         id: creat_jira_component
         run: |
-          PROJECT=$(echo "${env.branch}" | grep -oE '[A-Z]+')
+          PROJECT=$(echo "${{ env.branch }}" | grep -oE '[A-Z]+')
           
           echo "Create Jira component ${{ env.APP_NAME }}. Project ${PROJECT}"
           
