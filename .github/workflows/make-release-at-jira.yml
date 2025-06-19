@@ -22,7 +22,7 @@ jobs:
       - name: Get branch name and extract Jira issue ID
         id: extract_issue_id
         run: |
-          BRANCH_NAME="${{ github.base_ref || github.ref_name }}
+          BRANCH_NAME=${{ github.base_ref || github.ref_name }}
           echo "Branch: $BRANCH_NAME"
           echo "branch=${BRANCH_NAME}" >> $GITHUB_ENV
           ISSUE_ID=$(echo "$BRANCH_NAME" | grep -oE '[A-Z]+-[0-9]+')
