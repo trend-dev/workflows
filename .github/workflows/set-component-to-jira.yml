@@ -55,3 +55,7 @@ jobs:
           
           echo "\nComponent: ${{ env.APP_NAME }}"
           echo "jira_component=${{ env.APP_NAME }}" >> $GITHUB_ENV
+
+    env:
+      APP_VERSION: ${{ inputs.APP_VERSION }}
+      APP_NAME: ${{ inputs.APP_NAME }}
