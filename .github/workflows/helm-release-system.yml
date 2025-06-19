@@ -84,6 +84,7 @@ jobs:
     secrets: inherit
 
   jira_component:
+    if: github.event.pull_request.merged != true
     needs: [ version ]
     uses: trend-dev/workflows/.github/workflows/set-component-to-jira.yml@develop
     with:

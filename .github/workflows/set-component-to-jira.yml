@@ -91,5 +91,4 @@ jobs:
           fi
 
     env:
-      APP_VERSION: ${{ inputs.APP_VERSION }}
       APP_NAME: ${{ inputs.APP_NAME }}
