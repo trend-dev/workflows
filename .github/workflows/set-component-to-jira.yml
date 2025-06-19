@@ -18,8 +18,10 @@ jobs:
       - name: Get branch name and extract Jira issue ID
         id: extract_issue_id
         run: |
-          echo "Branch name: ${GITHUB_HEAD_REF}"
-          ISSUE_ID=$(echo "${GITHUB_HEAD_REF}" | grep -oE '[A-Z]+-[0-9]+')
+          RAW_REF="${{ github.ref }}"
+          BRANCH_NAME="${RAW_REF#refs/heads/}"
+          ISSUE_ID=$(echo "$BRANCH_NAME" | grep -oE '[A-Z]+-[0-9]+')
+          echo "Branch: $BRANCH_NAME"
           echo "Issue ID: ${ISSUE_ID}"
           echo "jira_issue_id=${ISSUE_ID}" >> $GITHUB_ENV
 
