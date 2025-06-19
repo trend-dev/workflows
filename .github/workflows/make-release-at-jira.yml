@@ -1,4 +1,4 @@
-name: Set version to JIRA
+name: Make release at JIRA
 on:
   workflow_call:
     inputs:
@@ -15,7 +15,7 @@ on:
         required: true
 
 jobs:
-  update-jira:
+  release:
     runs-on: [ self-hosted, docker-runner ]
 
     steps:

@@ -11,7 +11,7 @@ on:
         required: true
 
 jobs:
-  update-jira:
+  component:
     runs-on: [ self-hosted, docker-runner ]
 
     steps:
@@ -55,6 +55,40 @@ jobs:
           
           echo "\nComponent: ${{ env.APP_NAME }}"
           echo "jira_component=${{ env.APP_NAME }}" >> $GITHUB_ENV
+
+      - name: Update Jira issue with Component
+        id: update_jira
+        run: |
+          echo "Updating Jira issue ${{ env.jira_issue_id }} set component: ${{ env.APP_NAME }}"
+
+          SET_COMPONENT_JSON=$(cat <<EOF
+          {
+            "update": {
+              "components": [
+                {
+                  "add": {
+                    "name": "${{ env.jira_component }}"
+                  }
+                }
+              ]
+            }
+          }
+          EOF
+          )
+
+          HTTP_CODE=$(curl --silent --output /dev/null --write-out "%{http_code}" \
+          --request PUT \
+          --url "https://trend-it.atlassian.net/rest/api/3/issue/${{ env.jira_issue_id }}" \
+          --header "Authorization: Basic ${{ secrets.JIRA_API_KEY }}" \
+          --header "Content-Type: application/json" \
+          --data "$SET_COMPONENT_JSON")
+          
+          if [[ "$HTTP_CODE" -ge 200 && "$HTTP_CODE" -lt 300 ]]; then
+            echo  "Jira issue updated successfully with HTTP code $HTTP_CODE"
+          else
+            echo "Failed to update Jira issue. HTTP code: $HTTP_CODE"
+            exit 1
+          fi
 
     env:
       APP_VERSION: ${{ inputs.APP_VERSION }}
