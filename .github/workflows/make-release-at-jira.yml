@@ -94,7 +94,7 @@ jobs:
           fi
 
       - name: Create Jira release
-        id: creat_jira_release
+        id: create_jira_release
         if: github.event.pull_request.merged == true
         run: |
           PROJECT=$(echo "${GITHUB_HEAD_REF}" | grep -oE '[A-Z]+')
@@ -124,7 +124,7 @@ jobs:
           echo "jira_version=${{ env.APP_NAME }}-${{ env.APP_VERSION }}" >> $GITHUB_ENV
 
       - name: Update Jira issue with Fix Versions
-        id: update_jira
+        id: update_jira_fix_version
         if: github.event.pull_request.merged == true
         run: |
           echo "Updating Jira issue ${{ env.jira_issue_id }} with Fix Version ${{ env.APP_NAME }}-${{ env.APP_VERSION }}"
