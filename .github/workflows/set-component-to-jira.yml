@@ -28,7 +28,9 @@ jobs:
       - name: Create Jira component
         id: creat_jira_component
         run: |
-          PROJECT=$(echo "${GITHUB_HEAD_REF}" | grep -oE '[A-Z]+')
+          RAW_REF="${{ github.ref }}"
+          BRANCH_NAME="${RAW_REF#refs/heads/}"
+          PROJECT=$(echo "${BRANCH_NAME}" | grep -oE '[A-Z]+')
           
           echo "Create Jira component ${{ env.APP_NAME }}. Project ${PROJECT}"
           
