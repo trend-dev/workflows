@@ -83,13 +83,20 @@ jobs:
       CHART_FOLDER: './tools/charts/${{ needs.version.outputs.APP_NAME }}'
     secrets: inherit
 
+  jira_component:
+    needs: [ version ]
+    uses: trend-dev/workflows/.github/workflows/set-component-to-jira.yml@develop
+    with:
+      APP_NAME: ${{ needs.version.outputs.APP_NAME }}
+    secrets: inherit
+
   jira_version:
     if: github.event.pull_request.merged == true
     needs: [ version ]
-    uses: trend-dev/workflows/.github/workflows/set-version-to-jira-at-release.yml@master
+    uses: trend-dev/workflows/.github/workflows/set-version-to-jira.yml@develop
     with:
-      APP_VERSION: ${{ needs.version.outputs.APP_VERSION }}
       APP_NAME: ${{ needs.version.outputs.APP_NAME }}
+      APP_VERSION: ${{ needs.version.outputs.APP_VERSION }}
     secrets: inherit
 
   dry_run:

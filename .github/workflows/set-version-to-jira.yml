@@ -1,13 +1,13 @@
-name: Set version to JIRA epic at release
+name: Set version to JIRA
 on:
   workflow_call:
     inputs:
-      APP_VERSION:
-        description: "Application version"
-        required: true
-        type: string
       APP_NAME:
         description: "Application name"
+        required: true
+        type: string
+      APP_VERSION:
+        description: "Application version"
         required: true
         type: string
     secrets:
@@ -56,36 +56,6 @@ jobs:
           echo "\nVersion: ${{ env.APP_NAME }}-${{ env.APP_VERSION }}"
           echo "jira_version=${{ env.APP_NAME }}-${{ env.APP_VERSION }}" >> $GITHUB_ENV
 
-      - name: Create Jira component
-        id: creat_jira_component
-        run: |
-          PROJECT=$(echo "${GITHUB_HEAD_REF}" | grep -oE '[A-Z]+')
-          
-          echo "Create Jira component ${{ env.APP_NAME }}-${{ env.APP_VERSION }}. Project ${PROJECT}"
-          
-          CREATE_COMPONENT=$(cat <<EOF
-          {
-            "description": "Component ${{ env.APP_NAME }} created automatically",
-            "name": "${{ env.APP_NAME }}",
-            "project": "$PROJECT",
-            "assigneeType": "PROJECT_LEAD"
-          }
-          EOF
-          )
-
-          echo "${CREATE_COMPONENT}"
-          
-          curl --silent \
-            --request POST \
-            --url "https://trend-it.atlassian.net/rest/api/3/component" \
-            --header "Authorization: Basic ${{ secrets.JIRA_API_KEY }}" \
-            --header "Content-Type: application/json" \
-            --data "$CREATE_COMPONENT"
-          
-          
-          echo "\nComponent: ${{ env.APP_NAME }}"
-          echo "jira_component=${{ env.APP_NAME }}" >> $GITHUB_ENV
-
       - name: Update Jira issue with Fix Versions
         id: update_jira
         run: |
@@ -104,7 +74,7 @@ jobs:
               "components": [
                 {
                   "add": {
-                    "name": "${{ env.jira_component }}"
+                    "name": "${{ env.APP_NAME }}"
                   }
                 }
               ]
