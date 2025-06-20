@@ -31,7 +31,7 @@ jobs:
 
       - name: Create Jira component
         id: creat_jira_component
-        if: env.jira_issue_id != '
+        if: env.jira_issue_id != ''
         run: |
           PROJECT=$(echo "${{ env.branch }}" | grep -oE '[A-Z]+')
           
