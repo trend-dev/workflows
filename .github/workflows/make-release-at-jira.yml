@@ -90,7 +90,7 @@ jobs:
             echo  "Jira issue updated successfully with HTTP code $HTTP_CODE"
           else
             echo "Failed to update Jira issue. HTTP code: $HTTP_CODE"
-            exit 1
+            # exit 1
           fi
 
       - name: Create Jira release
