@@ -61,7 +61,7 @@ jobs:
 
       - name: Update Jira issue with Component
         id: update_jira
-        if: github.event.pull_request.merged != true
+        if: github.event.pull_request.merged != true && env.jira_issue_id != ''
         run: |
           echo "Updating Jira issue ${{ env.jira_issue_id }} set component: ${{ env.APP_NAME }}"
 
