@@ -25,12 +25,13 @@ jobs:
           BRANCH_NAME=${{ github.head_ref || github.ref_name }}
           echo "Branch: $BRANCH_NAME"
           echo "branch=${BRANCH_NAME}" >> $GITHUB_ENV
-          ISSUE_ID=$(echo "$BRANCH_NAME" | grep -oE '[A-Z]+-[0-9]+')
+          ISSUE_ID=$(echo "$BRANCH_NAME" | grep -oE '[A-Z]+-[0-9]+' || echo "")
           echo "Issue ID: ${ISSUE_ID}"
           echo "jira_issue_id=${ISSUE_ID}" >> $GITHUB_ENV
 
       - name: Create Jira component
         id: creat_jira_component
+        if: env.jira_issue_id != ""
         run: |
           PROJECT=$(echo "${{ env.branch }}" | grep -oE '[A-Z]+')
           
