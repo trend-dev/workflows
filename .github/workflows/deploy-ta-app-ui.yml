@@ -131,11 +131,12 @@ jobs:
           helm upgrade ${{ inputs.APP_NAME }}-${{ steps.branchName.outputs.branchName }} ./${{ inputs.APP_NAME }} --install --namespace ${{ inputs.LOCATION }}
 
       # Copy importmap.json from production to feature-env-domain
-      - name: install AWS-cli
-        if: ${{ github.event.inputs.copyImportmap == 'true' }}
-        run: |
-          sudo apt update && sudo apt install awscli -y
-        shell: bash
+      - id: install-aws-cli
+        uses: unfor19/install-aws-cli-action@v1
+        with:
+          version: 2
+          verbose: false
+          arch: amd64
 
       - name: Copy importmap from production
         if: ${{ github.event.inputs.copyImportmap == 'true' }}
