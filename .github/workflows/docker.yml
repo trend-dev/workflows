@@ -29,6 +29,14 @@ on:
         type: string
         required: false
         default: "docker-registry.trendagent.ru:5000"
+      EXTRA_BUILD_ARGS:
+        description: |
+          Дополнительные build-arg в формате
+          KEY1=VAL1
+          KEY2=VAL2
+        type: string
+        required: false
+        default: ""
     outputs:
       IMAGE:
         description: "Docker image name"
@@ -113,3 +121,4 @@ jobs:
           cache-to: type=local,dest=/tmp/.buildx-cache,mode=max
           build-args: |
             "NPM_TOKEN=${{ secrets.GPT_TOKEN }}"
+            ${{ inputs.EXTRA_BUILD_ARGS }}
