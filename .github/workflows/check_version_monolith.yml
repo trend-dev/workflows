@@ -39,6 +39,7 @@ jobs:
         if: ${{ github.event.inputs.LOCATION == 'stage' && github.ref != 'refs/heads/main' }}
         run: |
           npx @trend-dev/ui-libs-cli validate-version -t `curl -s -H 'Accept:application/json' \
+          -H 'Authorization:Basic ${{secrets.BASIC_AUTH_DEV}}' \
           '${{inputs.STAGE_APP_FQDN}}'`
         env:
           NODE_AUTH_TOKEN: ${{ secrets.GPT_TOKEN }}
