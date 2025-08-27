@@ -1,0 +1,49 @@
+name: Check version monolith repo
+
+on:
+  workflow_call:
+    inputs:
+      STAGE_APP_FQDN:
+        description: "FQDN on STAGE env"
+        type: string
+        required: true
+        default: ''
+
+jobs:
+  check_version:
+    name: Check version on stage
+    runs-on: [ self-hosted, docker-runner ]
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - uses: actions/checkout@v4
+        if: ${{ github.event.inputs.LOCATION == 'stage' && github.ref != 'refs/heads/main' }}
+        with:
+          persist-credentials: false
+
+      - name: Setup node
+        if: ${{ github.event.inputs.LOCATION == 'stage' && github.ref != 'refs/heads/main' }}
+        id: node_build
+        uses: actions/setup-node@v4
+        # Используется для установки из приватного npm-регистра
+        with:
+          node-version: 20
+          registry-url: 'https://npm.pkg.github.com'
+          scope: '@trend-dev'
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.GPT_TOKEN_NEW }}
+          CI: true
+
+      - name: check version
+        if: ${{ github.event.inputs.LOCATION == 'stage' && github.ref != 'refs/heads/main' }}
+        run: |
+          npx @trend-dev/ui-libs-cli validate-version -t `curl -s -H 'Accept:application/json' \
+          '${{inputs.STAGE_APP_FQDN}}'`
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.GPT_TOKEN }}
+
+      - name: skipped
+        run: |
+          echo "checks have been skipped"
+        shell: bash
