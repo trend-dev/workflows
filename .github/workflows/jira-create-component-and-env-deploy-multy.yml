@@ -82,6 +82,41 @@ jobs:
           echo "\nComponent: ${{ env.APP_NAME }}/${{ inputs.PACKAGE_NAME }}"
           echo "jira_component=${{ env.APP_NAME }}/${{ inputs.PACKAGE_NAME }}" >> $GITHUB_ENV
 
+      - name: Update Jira issue with Fix Versions
+        if: ${{ env.jira_issue_id != '' }}
+        id: update_jira
+        run: |
+          echo "Updating Jira issue ${{ env.jira_issue_id }} with ${{ env.APP_NAME }}"
+
+          COMPONENT=$(cat <<EOF
+          {
+            "update": {
+              "components": [
+                {
+                  "add": {
+                    "name": "${{ env.jira_component }}"
+                  }
+                }
+              ]
+            }
+          }
+          EOF
+          )
+
+          HTTP_CODE=$(curl --silent --output /dev/null --write-out "%{http_code}" \
+          --request PUT \
+          --url "https://trend-it.atlassian.net/rest/api/3/issue/${{ env.jira_issue_id }}" \
+          --header "Authorization: Basic ${{ secrets.JIRA_API_KEY }}" \
+          --header "Content-Type: application/json" \
+          --data "$FIX_VERSION_JSON")
+
+          if [[ "$HTTP_CODE" -ge 200 && "$HTTP_CODE" -lt 300 ]]; then
+            echo  "Jira issue updated successfully with HTTP code $HTTP_CODE"
+          else
+            echo "Failed to update Jira issue. HTTP code: $HTTP_CODE"
+            exit 1
+          fi
+
       - name: Adding ENV to comment
         if: ${{ env.jira_issue_id != '' }}
         id: adding_environment
@@ -95,8 +130,8 @@ jobs:
                 {
                   "content": [
                     {
-                      "text": "Deployed to",
-                      "type": "link"
+                      "text": "Text",
+                      "type": "text"
                     }
                   ],
                   "type": "paragraph"
@@ -104,25 +139,24 @@ jobs:
               ],
               "type": "doc",
               "version": 1
+            },
+            "visibility": {
+              "identifier": "Administrators",
+              "type": "role",
+              "value": "Administrators"
             }
           }
           EOF
           )
 
-          HTTP_CODE=$(curl --silent --output /dev/null --write-out "%{http_code}" \
-          --request POST \
-          --url "https://trend-it.atlassian.net/rest/api/3/issue/${{ env.jira_issue_id }}/comment" \
-          --header "Authorization: Basic ${{ secrets.JIRA_API_KEY }}" \
-          --header "Content-Type: application/json" \
-          --header 'Accept: application/json' \
-          --data "$COMMENT_JSON")
+          echo "${COMMENT_JSON}"
 
-          if [[ "$HTTP_CODE" -ge 200 && "$HTTP_CODE" -lt 300 ]]; then
-            echo  "Jira issue updated successfully with HTTP code $HTTP_CODE"
-          else
-            echo "Failed to update Jira issue. HTTP code: $HTTP_CODE"
-            exit 1
-          fi
+          curl --silent \
+            --request POST \
+            --url "https://trend-it.atlassian.net/rest/api/3/issue/${{ env.jira_issue_id }}/comment" \
+            --header "Authorization: Basic ${{ secrets.JIRA_API_KEY }}" \
+            --header "Content-Type: application/json" \
+            --data "COMMENT_JSON"
 
     env:
       PACKAGE_FILE: ${{ inputs.APP_DESTINATION }}/${{ inputs.PACKAGE_NAME }}/package.json
