@@ -139,6 +139,7 @@ jobs:
                             "href": "https://${{inputs.LOCATION}}.trend.tech"
                           }
                         }
+                      ]
                     }
                   ],
                   "type": "paragraph"
