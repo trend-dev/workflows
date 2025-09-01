@@ -8,6 +8,11 @@ on:
         type: string
         required: true
         default: ''
+      CHECK_VERSIONS:
+        description: "Check versions between workdir and stage env"
+        type: string
+        required: true
+        default: true
 
 jobs:
   check_version:
@@ -18,12 +23,12 @@ jobs:
       packages: write
     steps:
       - uses: actions/checkout@v4
-        if: ${{ github.event.inputs.LOCATION == 'stage' && github.ref != 'refs/heads/main' }}
+        if: ${{ github.event.inputs.LOCATION == 'stage' && github.ref != 'refs/heads/main' && inputs.CHECK_VERSIONS == 'true' }} }}
         with:
           persist-credentials: false
 
       - name: Setup node
-        if: ${{ github.event.inputs.LOCATION == 'stage' && github.ref != 'refs/heads/main' }}
+        if: ${{ github.event.inputs.LOCATION == 'stage' && github.ref != 'refs/heads/main' && inputs.CHECK_VERSIONS == 'true' }}
         id: node_build
         uses: actions/setup-node@v4
         # Используется для установки из приватного npm-регистра
@@ -36,7 +41,7 @@ jobs:
           CI: true
 
       - name: check version
-        if: ${{ github.event.inputs.LOCATION == 'stage' && github.ref != 'refs/heads/main' }}
+        if: ${{ github.event.inputs.LOCATION == 'stage' && github.ref != 'refs/heads/main' && inputs.CHECK_VERSIONS == 'true' }}
         run: |
           npx @trend-dev/ui-libs-cli validate-version -t `curl -s -H 'Accept:application/json' \
           -H 'Authorization:Basic ${{secrets.BASIC_AUTH_DEV}}' \
