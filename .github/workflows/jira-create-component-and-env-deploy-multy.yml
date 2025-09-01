@@ -130,7 +130,7 @@ jobs:
                 {
                   "content": [
                     {
-                      "text": "Text",
+                      "text": "Test text",
                       "type": "text"
                     }
                   ],
@@ -139,11 +139,6 @@ jobs:
               ],
               "type": "doc",
               "version": 1
-            },
-            "visibility": {
-              "identifier": "Administrators",
-              "type": "role",
-              "value": "Administrators"
             }
           }
           EOF
