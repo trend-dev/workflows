@@ -90,17 +90,21 @@ jobs:
 
           COMMENT_JSON=$(cat <<EOF
           {
-            "type": "deployed to",
-            "text": "https://${{ inputs.LOCATION }}.trend.tech,
-            "marks": [
-              {
-                "type": "link",
-                "attrs": {
-                  "href": "https://${{ inputs.LOCATION }}.trend.tech",
-                  "title": "https://${{ inputs.LOCATION }}.trend.tech"
+            "body": {
+              "content": [
+                {
+                  "content": [
+                    {
+                      "text": "Deployed to",
+                      "type": "link"
+                    }
+                  ],
+                  "type": "paragraph"
                 }
-              }
-            ]
+              ],
+              "type": "doc",
+              "version": 1
+            }
           }
           EOF
           )
