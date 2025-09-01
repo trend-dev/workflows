@@ -1,0 +1,125 @@
+name: Create component and comment
+on:
+  workflow_call:
+    inputs:
+      APP_NAME:
+        description: "Application name"
+        required: true
+        type: string
+      PACKAGE_NAME:
+        type: string
+        required: true
+      APP_DESTINATION:
+        type: string
+        required: true
+      LOCATION:
+        type: string
+        required: true
+    secrets:
+      JIRA_API_KEY:
+        required: true
+
+jobs:
+  update-jira:
+    runs-on: [ self-hosted, docker-runner ]
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Get package version
+        id: package_version
+        run: |
+          echo "PACKAGE_VERSION=$(awk -F "\"" '/version/{print $4; exit}' ${{ env.PACKAGE_FILE }})" >> $GITHUB_ENV
+
+      - name: Get project code
+        id: get_project_code
+        run: |
+          echo "Repo name: ${{ github.event.repository.name }}"
+          PROJECT_CODE=$(echo "${{ github.event.repository.name }}" | awk -F '-' '{print $1}')
+          if [[ $PROJECT_CODE == "ta" ]]; then
+            PROJECT='TRA'
+          else
+            PROJECT='TRR'
+          fi
+
+          echo "PROJECT=${PROJECT}" >> $GITHUB_ENV
+          echo "Project Code: ${PROJECT}"
+
+      - name: Get branch name and extract Jira issue ID
+        id: extract_issue_id
+        run: |
+          echo "Branch name: ${GITHUB_REF_NAME}"
+          ISSUE_ID=$(echo "${GITHUB_REF_NAME}" | grep -oE '[a-z]+-[0-9]+' | tr [:lower:] [:upper:])
+          echo "Issue ID: ${ISSUE_ID}"
+          echo "jira_issue_id=${ISSUE_ID}" >> $GITHUB_ENV
+
+      - name: Create Jira component
+        id: creat_jira_component
+        run: |
+          echo "Create Jira component ${{ env.APP_NAME }}/${{ inputs.PACKAGE_NAME }}. Project ${{ env.PROJECT }}"
+
+          CREATE_COMPONENT=$(cat <<EOF
+          {
+            "description": "Component ${{ env.APP_NAME }}/${{ inputs.PACKAGE_NAME }} created automatically",
+            "name": "${{ env.APP_NAME }}/${{ inputs.PACKAGE_NAME }}",
+            "project": "${{ env.PROJECT }}",
+            "assigneeType": "PROJECT_LEAD"
+          }
+          EOF
+          )
+
+          echo "${CREATE_COMPONENT}"
+
+          curl --silent \
+            --request POST \
+            --url "https://trend-it.atlassian.net/rest/api/3/component" \
+            --header "Authorization: Basic ${{ secrets.JIRA_API_KEY }}" \
+            --header "Content-Type: application/json" \
+            --data "$CREATE_COMPONENT"
+
+
+          echo "\nComponent: ${{ env.APP_NAME }}/${{ inputs.PACKAGE_NAME }}"
+          echo "jira_component=${{ env.APP_NAME }}/${{ inputs.PACKAGE_NAME }}" >> $GITHUB_ENV
+
+      - name: Adding ENV to comment
+        if: ${{ env.jira_issue_id != '' }}
+        id: adding_environment
+        run: |
+          echo "Updating Jira issue ${{ env.jira_issue_id }} with dev environment"
+
+          COMMENT_JSON=$(cat <<EOF
+          {
+            "type": "deployed to",
+            "text": "https://${{ inputs.LOCATION }}.trend.tech,
+            "marks": [
+              {
+                "type": "link",
+                "attrs": {
+                  "href": "https://${{ inputs.LOCATION }}.trend.tech",
+                  "title": "https://${{ inputs.LOCATION }}.trend.tech"
+                }
+              }
+            ]
+          }
+          EOF
+          )
+
+          HTTP_CODE=$(curl --silent --output /dev/null --write-out "%{http_code}" \
+          --request POST \
+          --url "https://trend-it.atlassian.net/rest/api/3/issue/${{ env.jira_issue_id }}/comment" \
+          --header "Authorization: Basic ${{ secrets.JIRA_API_KEY }}" \
+          --header "Content-Type: application/json" \
+          --header 'Accept: application/json' \
+          --data "$COMMENT_JSON")
+
+          if [[ "$HTTP_CODE" -ge 200 && "$HTTP_CODE" -lt 300 ]]; then
+            echo  "Jira issue updated successfully with HTTP code $HTTP_CODE"
+          else
+            echo "Failed to update Jira issue. HTTP code: $HTTP_CODE"
+            exit 1
+          fi
+
+    env:
+      PACKAGE_FILE: ${{ inputs.APP_DESTINATION }}/${{ inputs.PACKAGE_NAME }}/package.json
+      APP_NAME: ${{ inputs.APP_NAME }}
