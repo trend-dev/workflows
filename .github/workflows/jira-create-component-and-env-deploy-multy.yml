@@ -125,21 +125,17 @@ jobs:
 
           COMMENT_JSON=$(cat <<EOF
           {
-            "body": {
-              "content": [
-                {
-                  "content": [
-                    {
-                      "text": "Test text",
-                      "type": "text"
-                    }
-                  ],
-                  "type": "paragraph"
+            "type": "text",
+            "text": "Environment",
+            "marks": [
+              {
+                "type": "link",
+                "attrs": {
+                  "href": "http://test.trend",
+                  "title": "ENV!"
                 }
-              ],
-              "type": "doc",
-              "version": 1
-            }
+              }
+            ]
           }
           EOF
           )
