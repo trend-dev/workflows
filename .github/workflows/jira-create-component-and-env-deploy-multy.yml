@@ -152,7 +152,7 @@ jobs:
             --header "Authorization: Basic ${{ secrets.JIRA_API_KEY }}" \
             --header "Content-Type: application/json" \
             --header 'Accept: application/json' \
-            --data "COMMENT_JSON"
+            --data "$COMMENT_JSON"
 
     env:
       PACKAGE_FILE: ${{ inputs.APP_DESTINATION }}/${{ inputs.PACKAGE_NAME }}/package.json
