@@ -19,6 +19,12 @@ jobs:
     runs-on: [ self-hosted, docker-runner ]
 
     steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - id: sha_commit
+        run: echo "sha_commit=$(git rev-parse HEAD)" >> $GITHUB_OUTPUT
+
       - name: Get branch name and extract Jira issue ID
         id: extract_issue_id
         run: |
@@ -165,6 +171,83 @@ jobs:
             echo "Failed to update Jira issue. HTTP code: $HTTP_CODE"
             exit 1
           fi
+
+      - name: Adding ENV to comment
+        if: ${{ env.jira_issue_id != '' }}
+        id: adding_environment
+        run: |
+          echo "Updating Jira issue ${{ env.jira_issue_id }} with dev environment"
+
+          COMMENT_JSON=$(cat <<EOF
+          {
+            "body": {
+              "type": "doc",
+              "version": 1,
+              "content": [
+                {
+                  "type": "paragraph",
+                  "content": [
+                    {
+                      "type": "text",
+                      "text": "Успешно выполнен деплой",
+                      "marks": [
+                        {
+                          "type": "strong"
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "type": "paragraph",
+                  "content": [
+                    {
+                      "type": "text",
+                      "text": "Окружение: "
+                    },
+                    {
+                      "type": "text",
+                      "text": "${{inputs.URI}}",
+                      "marks": [
+                        {
+                          "type": "link",
+                          "attrs": {
+                            "href": "${{inputs.URI}}",
+                            "title": "Окружение"
+                          }
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "type": "paragraph",
+                  "content": [
+                    {
+                      "type": "text",
+                      "text": "SHA: "
+                    },
+                    {
+                      "type": "text",
+                      "text": "${{steps.sha_commit.outputs.sha_commit}}"
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+          EOF
+          )
+
+          echo "${COMMENT_JSON}"
+
+          curl --silent \
+            --request POST \
+            --url "https://trend-it.atlassian.net/rest/api/3/issue/${{ env.jira_issue_id }}/comment" \
+            --header "Authorization: Basic ${{ secrets.JIRA_API_KEY }}" \
+            --header "Content-Type: application/json" \
+            --header 'Accept: application/json' \
+            --data "$COMMENT_JSON"
 
     env:
       APP_VERSION: ${{ inputs.APP_VERSION }}
