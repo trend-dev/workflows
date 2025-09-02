@@ -10,6 +10,9 @@ on:
         description: "Application version"
         required: true
         type: string
+      URI:
+        type: string
+        required: false
     secrets:
       JIRA_API_KEY:
         required: true
