@@ -83,7 +83,7 @@ jobs:
         if: ${{ env.jira_issue_id != '' }}
         id: update_jira
         run: |
-          echo "Updating Jira issue ${{ env.jira_issue_id }} with ${{ env.APP_NAME }}${{ inputs.PACKAGE_NAME }}"
+          echo "Updating Jira issue ${{ env.jira_issue_id }} with ${{ env.APP_NAME }}/${{ inputs.PACKAGE_NAME }}"
 
           COMPONENT=$(cat <<EOF
           {
