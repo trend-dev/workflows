@@ -1,4 +1,4 @@
-name: Create component and comment
+name: Create and update component
 on:
   workflow_call:
     inputs:
@@ -10,9 +10,6 @@ on:
         type: string
         required: true
       APP_DESTINATION:
-        type: string
-        required: true
-      LOCATION:
         type: string
         required: true
     secrets:
@@ -116,51 +113,6 @@ jobs:
             echo "Failed to update Jira issue. HTTP code: $HTTP_CODE"
             exit 1
           fi
-
-      - name: Adding ENV to comment
-        if: ${{ env.jira_issue_id != '' }}
-        id: adding_environment
-        run: |
-          echo "Updating Jira issue ${{ env.jira_issue_id }} with dev environment"
-
-          COMMENT_JSON=$(cat <<EOF
-          {
-            "body": {
-              "content": [
-                {
-                  "content": [
-                    {
-                      "text": "Deployed to",
-                      "type": "text",
-                      "marks": [
-                        {
-                          "type": "link",
-                          "attrs": {
-                            "href": "https://${{inputs.LOCATION}}.trend.tech"
-                          }
-                        }
-                      ]
-                    }
-                  ],
-                  "type": "paragraph"
-                }
-              ],
-              "type": "doc",
-              "version": 1
-            }
-          }
-          EOF
-          )
-
-          echo "${COMMENT_JSON}"
-
-          curl --silent \
-            --request POST \
-            --url "https://trend-it.atlassian.net/rest/api/3/issue/${{ env.jira_issue_id }}/comment" \
-            --header "Authorization: Basic ${{ secrets.JIRA_API_KEY }}" \
-            --header "Content-Type: application/json" \
-            --header 'Accept: application/json' \
-            --data "$COMMENT_JSON"
 
     env:
       PACKAGE_FILE: ${{ inputs.APP_DESTINATION }}/${{ inputs.PACKAGE_NAME }}/package.json
