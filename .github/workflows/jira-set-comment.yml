@@ -51,39 +51,50 @@ jobs:
           COMMENT_JSON=$(cat <<EOF
           {
             "body": {
+              "type": "doc",
+              "version": 1,
               "content": [
                 {
+                  "type": "paragraph",
                   "content": [
                     {
-                      "text": "Выполнен успешный деплой",
                       "type": "text",
+                      "text": "Выполнен успешный деплой"
                     }
-                  ],
+                  ]
+                },
+                {
+                  "type": "paragraph",
                   "content": [
                     {
-                      "text": "Компоненты: ${{inputs.APPS}}",
                       "type": "text",
+                      "text": "Компоненты: ${{inputs.APPS}}"
                     }
-                  ],
+                  ]
+                },
+                {
+                  "type": "paragraph",
                   "content": [
                     {
-                      "text": "Окружение: ${{inputs.URI}}",
                       "type": "text",
+                      "text": "Окружение: "
+                    },
+                    {
+                      "type": "text",
+                      "text": "${{inputs.URI}}",
                       "marks": [
                         {
                           "type": "link",
                           "attrs": {
-                            "href": "${{inputs.URI}}"
+                            "href": "${{inputs.URI}}",
+                            "title": "Окружение"
                           }
                         }
                       ]
                     }
-                  ],
-                  "type": "paragraph"
+                  ]
                 }
-              ],
-              "type": "doc",
-              "version": 1
+              ]
             }
           }
           EOF
