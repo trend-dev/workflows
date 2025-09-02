@@ -20,6 +20,9 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
+      - id: sha_commit
+        run: echo "sha_commit=$(git rev-parse HEAD)" >> $GITHUB_OUTPUT
+
       - name: Get project code
         id: get_project_code
         run: |
@@ -91,6 +94,19 @@ jobs:
                           }
                         }
                       ]
+                    }
+                  ]
+                },
+                {
+                  "type": "paragraph",
+                  "content": [
+                    {
+                      "type": "text",
+                      "text": "SHA: "
+                    },
+                    {
+                      "type": "text",
+                      "text": "${{steps.sha_commit.outputs.sha_commit}}"
                     }
                   ]
                 }
