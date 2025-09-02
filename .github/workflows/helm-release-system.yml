@@ -39,6 +39,9 @@ on:
         description: "Generate manifests"
         type: string
         required: false
+      URI:
+        type: string
+        required: false
     secrets:
       DEV_KUBE_CONFIG:
         required: false
@@ -109,6 +112,7 @@ jobs:
     if: always() && !cancelled() && !failure() && inputs.DRY_RUN != 'true'
     uses: trend-dev/workflows/.github/workflows/helm-release.yml@master
     with:
+      URI: ${{ inputs.URI }}
       APP_NAME: ${{ needs.version.outputs.APP_NAME }}
       APP_VERSION: '${{ needs.version.outputs.APP_VERSION }}-${{ github.sha }}'
       LOCATION: ${{ inputs.LOCATION }}

@@ -22,6 +22,9 @@ on:
         type: string
         required: false
         default: "docker-registry.trendagent.ru:5000"
+      URI:
+        type: string
+        required: false
     secrets:
       DEV_KUBE_CONFIG:
         required: false
@@ -37,6 +40,9 @@ on:
 jobs:
   release:
     runs-on: [ self-hosted, docker-runner ]
+    environment:
+      name: staging
+      url: ${{ inputs.URI }}
     steps:
 
       - name: Check
