@@ -17,7 +17,7 @@ on:
         required: true
 
 jobs:
-  update-jira:
+  update-jira-release:
     runs-on: [ self-hosted, docker-runner ]
 
     steps:
