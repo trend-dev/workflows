@@ -5,6 +5,9 @@ on:
       URI:
         type: string
         required: true
+      APPS:
+        type: string
+        required: true
     secrets:
       JIRA_API_KEY:
         required: true
@@ -52,7 +55,19 @@ jobs:
                 {
                   "content": [
                     {
-                      "text": "${{inputs.URI}}",
+                      "text": "Выполнент успешный деплой",
+                      "type": "text",
+                    }
+                  ],
+                  "content": [
+                    {
+                      "text": "Компоненты: ${{inputs.APPS}}",
+                      "type": "text",
+                    }
+                  ],
+                  "content": [
+                    {
+                      "text": "Окружение: ${{inputs.URI}}",
                       "type": "text",
                       "marks": [
                         {
