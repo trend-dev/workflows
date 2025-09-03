@@ -4,14 +4,14 @@ on:
     inputs:
       APP_NAME:
         description: "Application name"
-        required: true
+        required: false
         type: string
       PACKAGE_NAME:
         type: string
         required: true
       APP_DESTINATION:
         type: string
-        required: true
+        required: false
     secrets:
       JIRA_API_KEY:
         required: true
@@ -23,11 +23,6 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
-
-      - name: Get package version
-        id: package_version
-        run: |
-          echo "PACKAGE_VERSION=$(awk -F "\"" '/version/{print $4; exit}' ${{ env.PACKAGE_FILE }})" >> $GITHUB_ENV
 
       - name: Get project code
         id: get_project_code
