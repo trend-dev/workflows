@@ -2,14 +2,16 @@ name: Set version to JIRA epic at release
 on:
   workflow_call:
     inputs:
-      APP_VERSION:
-        description: "Application version"
-        required: true
-        type: string
       APP_NAME:
         description: "Application name"
         required: true
         type: string
+      PACKAGE_NAME:
+        type: string
+        required: true
+      APP_DESTINATION:
+        type: string
+        required: true
     secrets:
       JIRA_API_KEY:
         required: true
@@ -19,6 +21,13 @@ jobs:
     runs-on: [ self-hosted, docker-runner ]
 
     steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Get package version
+        id: package_version
+        run: |
+          echo "PACKAGE_VERSION=$(awk -F "\"" '/version/{print $4; exit}' ${{ env.PACKAGE_FILE }})" >> $GITHUB_ENV
 
       - name: Get project code
         id: get_project_code
@@ -45,12 +54,12 @@ jobs:
       - name: Create Jira release
         id: creat_jira_release
         run: |
-          echo "Create Jira release ${{ env.APP_NAME }}-${{ env.APP_VERSION }}. Project ${{ env.PROJECT }}"
+          echo "Create Jira release ${{ env.APP_NAME }}/${{ inputs.PACKAGE_NAME }}-${{ env.PACKAGE_VERSION }}. Project ${{ env.PROJECT }}"
 
           CREATE_RELEASE=$(cat <<EOF
           {
-            "description": "Version ${{ env.APP_NAME }}-${{ env.APP_VERSION }} created automatically",
-            "name": "${{ env.APP_NAME }}-${{ env.APP_VERSION }}",
+            "description": "Version ${{ env.APP_NAME }}/${{ inputs.PACKAGE_NAME }}-${{ env.PACKAGE_VERSION }} created automatically",
+            "name": "${{ env.APP_NAME }}/${{ inputs.PACKAGE_NAME }}-${{ env.PACKAGE_VERSION }}",
             "project": "${{ env.PROJECT }}",
             "released": false
           }
@@ -66,18 +75,18 @@ jobs:
             --header "Content-Type: application/json" \
             --data "$CREATE_RELEASE"
 
-          echo "\nVersion: ${{ env.APP_NAME }}-${{ env.APP_VERSION }}"
-          echo "jira_version=${{ env.APP_NAME }}-${{ env.APP_VERSION }}" >> $GITHUB_ENV
+          echo "\nVersion: ${{ env.APP_NAME }}/${{ inputs.PACKAGE_NAME }}-${{ env.PACKAGE_VERSION }}"
+          echo "jira_version=${{ env.APP_NAME }}/${{ inputs.PACKAGE_NAME }}-${{ env.PACKAGE_VERSION }}" >> $GITHUB_ENV
 
       - name: Create Jira component
         id: creat_jira_component
         run: |
-          echo "Create Jira component ${{ env.APP_NAME }}-${{ env.APP_VERSION }}. Project ${{ env.PROJECT }}"
+          echo "Create Jira component ${{ env.APP_NAME }}/${{ inputs.PACKAGE_NAME }}. Project ${{ env.PROJECT }}"
 
           CREATE_COMPONENT=$(cat <<EOF
           {
-            "description": "Component ${{ env.APP_NAME }} created automatically",
-            "name": "${{ env.APP_NAME }}",
+            "description": "Component ${{ env.APP_NAME }}/${{ inputs.PACKAGE_NAME }} created automatically",
+            "name": "${{ env.APP_NAME }}/${{ inputs.PACKAGE_NAME }}",
             "project": "${{ env.PROJECT }}",
             "assigneeType": "PROJECT_LEAD"
           }
@@ -94,14 +103,14 @@ jobs:
             --data "$CREATE_COMPONENT"
 
 
-          echo "\nComponent: ${{ env.APP_NAME }}"
-          echo "jira_component=${{ env.APP_NAME }}" >> $GITHUB_ENV
+          echo "\nComponent: ${{ env.APP_NAME }}/${{ inputs.PACKAGE_NAME }}"
+          echo "jira_component=${{ env.APP_NAME }}/${{ inputs.PACKAGE_NAME }}" >> $GITHUB_ENV
 
       - name: Update Jira issue with Fix Versions
         if: ${{ env.jira_issue_id != '' }}
         id: update_jira
         run: |
-          echo "Updating Jira issue ${{ env.jira_issue_id }} with Fix Version ${{ env.APP_NAME }}-${{ env.APP_VERSION }}"
+          echo "Updating Jira issue ${{ env.jira_issue_id }} with Fix Version ${{ env.APP_NAME }}/${{ inputs.PACKAGE_NAME }}-${{ env.PACKAGE_VERSION }}"
 
           FIX_VERSION_JSON=$(cat <<EOF
           {
@@ -110,6 +119,13 @@ jobs:
                 {
                   "add": {
                     "name": "${{ env.jira_version }}"
+                  }
+                }
+              ],
+              "components": [
+                {
+                  "add": {
+                    "name": "${{ env.jira_component }}"
                   }
                 }
               ]
@@ -133,5 +149,5 @@ jobs:
           fi
 
     env:
-      APP_VERSION: ${{ inputs.APP_VERSION }}
+      PACKAGE_FILE: ${{ inputs.APP_DESTINATION }}/${{ inputs.PACKAGE_NAME }}/package.json
       APP_NAME: ${{ inputs.APP_NAME }}

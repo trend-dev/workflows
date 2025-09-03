@@ -1,24 +1,28 @@
-name: Set version to JIRA epic at release
+name: Create and update component
 on:
   workflow_call:
     inputs:
-      APP_VERSION:
-        description: "Application version"
-        required: true
-        type: string
       APP_NAME:
         description: "Application name"
-        required: true
+        required: false
         type: string
+      PACKAGE_NAME:
+        type: string
+        required: true
+      APP_DESTINATION:
+        type: string
+        required: false
     secrets:
       JIRA_API_KEY:
         required: true
 
 jobs:
-  update-jira:
+  update-jira-release:
     runs-on: [ self-hosted, docker-runner ]
 
     steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
 
       - name: Get project code
         id: get_project_code
@@ -42,42 +46,15 @@ jobs:
           echo "Issue ID: ${ISSUE_ID}"
           echo "jira_issue_id=${ISSUE_ID}" >> $GITHUB_ENV
 
-      - name: Create Jira release
-        id: creat_jira_release
-        run: |
-          echo "Create Jira release ${{ env.APP_NAME }}-${{ env.APP_VERSION }}. Project ${{ env.PROJECT }}"
-
-          CREATE_RELEASE=$(cat <<EOF
-          {
-            "description": "Version ${{ env.APP_NAME }}-${{ env.APP_VERSION }} created automatically",
-            "name": "${{ env.APP_NAME }}-${{ env.APP_VERSION }}",
-            "project": "${{ env.PROJECT }}",
-            "released": false
-          }
-          EOF
-          )
-
-          echo "${CREATE_RELEASE}"
-
-          curl --silent \
-            --request POST \
-            --url "https://trend-it.atlassian.net/rest/api/3/version" \
-            --header "Authorization: Basic ${{ secrets.JIRA_API_KEY }}" \
-            --header "Content-Type: application/json" \
-            --data "$CREATE_RELEASE"
-
-          echo "\nVersion: ${{ env.APP_NAME }}-${{ env.APP_VERSION }}"
-          echo "jira_version=${{ env.APP_NAME }}-${{ env.APP_VERSION }}" >> $GITHUB_ENV
-
       - name: Create Jira component
         id: creat_jira_component
         run: |
-          echo "Create Jira component ${{ env.APP_NAME }}-${{ env.APP_VERSION }}. Project ${{ env.PROJECT }}"
+          echo "Create Jira component ${{ env.APP_NAME }}/${{ inputs.PACKAGE_NAME }}. Project ${{ env.PROJECT }}"
 
           CREATE_COMPONENT=$(cat <<EOF
           {
-            "description": "Component ${{ env.APP_NAME }} created automatically",
-            "name": "${{ env.APP_NAME }}",
+            "description": "Component ${{ env.APP_NAME }}/${{ inputs.PACKAGE_NAME }} created automatically",
+            "name": "${{ env.APP_NAME }}/${{ inputs.PACKAGE_NAME }}",
             "project": "${{ env.PROJECT }}",
             "assigneeType": "PROJECT_LEAD"
           }
@@ -94,22 +71,22 @@ jobs:
             --data "$CREATE_COMPONENT"
 
 
-          echo "\nComponent: ${{ env.APP_NAME }}"
-          echo "jira_component=${{ env.APP_NAME }}" >> $GITHUB_ENV
+          echo "\nComponent: ${{ env.APP_NAME }}/${{ inputs.PACKAGE_NAME }}"
+          echo "jira_component=${{ env.APP_NAME }}/${{ inputs.PACKAGE_NAME }}" >> $GITHUB_ENV
 
-      - name: Update Jira issue with Fix Versions
+      - name: Update components at Jira
         if: ${{ env.jira_issue_id != '' }}
         id: update_jira
         run: |
-          echo "Updating Jira issue ${{ env.jira_issue_id }} with Fix Version ${{ env.APP_NAME }}-${{ env.APP_VERSION }}"
+          echo "Updating Jira issue ${{ env.jira_issue_id }} with ${{ env.APP_NAME }}/${{ inputs.PACKAGE_NAME }}"
 
-          FIX_VERSION_JSON=$(cat <<EOF
+          COMPONENT=$(cat <<EOF
           {
             "update": {
-              "fixVersions": [
+              "components": [
                 {
                   "add": {
-                    "name": "${{ env.jira_version }}"
+                    "name": "${{ env.jira_component }}"
                   }
                 }
               ]
@@ -123,7 +100,7 @@ jobs:
           --url "https://trend-it.atlassian.net/rest/api/3/issue/${{ env.jira_issue_id }}" \
           --header "Authorization: Basic ${{ secrets.JIRA_API_KEY }}" \
           --header "Content-Type: application/json" \
-          --data "$FIX_VERSION_JSON")
+          --data "$COMPONENT")
 
           if [[ "$HTTP_CODE" -ge 200 && "$HTTP_CODE" -lt 300 ]]; then
             echo  "Jira issue updated successfully with HTTP code $HTTP_CODE"
@@ -133,5 +110,5 @@ jobs:
           fi
 
     env:
-      APP_VERSION: ${{ inputs.APP_VERSION }}
+      PACKAGE_FILE: ${{ inputs.APP_DESTINATION }}/${{ inputs.PACKAGE_NAME }}/package.json
       APP_NAME: ${{ inputs.APP_NAME }}
