@@ -121,13 +121,6 @@ jobs:
                     "name": "${{ env.jira_version }}"
                   }
                 }
-              ],
-              "components": [
-                {
-                  "add": {
-                    "name": "${{ env.jira_component }}"
-                  }
-                }
               ]
             }
           }
