@@ -15,7 +15,7 @@ on:
 jobs:
   Run_unit_tests:
     name: Test
-    runs-on: [ self-hosted, docker-runner-front ]
+    runs-on: [ self-hosted, docker-runner ]
     outputs:
       TIMESTAMP: ${{ steps.timestamp.outputs.TIMESTAMP }}
       SERVICE: ${{ steps.service.outputs.SERVICE }}
