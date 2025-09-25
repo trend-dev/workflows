@@ -36,6 +36,8 @@ jobs:
           PROJECT_CODE=$(echo "${{ github.event.repository.name }}" | awk -F '-' '{print $1}')
           if [[ $PROJECT_CODE == "ta" ]]; then
             PROJECT='TRA'
+          elif [[ $PROJECT_CODE == "crm" ]]; then
+            PROJECT='CRM'
           else
             PROJECT='TRR'
           fi
