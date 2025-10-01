@@ -86,15 +86,6 @@ jobs:
       CHART_FOLDER: './tools/charts/${{ needs.version.outputs.APP_NAME }}'
     secrets: inherit
 
-  jira_version:
-    needs: [ version ]
-    uses: trend-dev/workflows/.github/workflows/make-release-at-jira.yml@master
-    with:
-      APP_NAME: ${{ needs.version.outputs.APP_NAME }}
-      APP_VERSION: ${{ needs.version.outputs.APP_VERSION }}
-      URI: ${{ inputs.URI }}
-    secrets: inherit
-
   dry_run:
     if: inputs.DRY_RUN == 'true'
     needs: [ version, chart ]
@@ -123,6 +114,15 @@ jobs:
       DEV_KUBE_CONFIG: ${{ secrets.DEV_KUBE_CONFIG }}
       DOCKER_REGISTRY_USER: ${{ secrets.DOCKER_REGISTRY_USER }}
       DOCKER_REGISTRY_PASSWORD: ${{ secrets.DOCKER_REGISTRY_PASSWORD }}
+
+  jira_version:
+    needs: [ release_to_dev ]
+    uses: trend-dev/workflows/.github/workflows/make-release-at-jira.yml@master
+    with:
+      APP_NAME: ${{ needs.version.outputs.APP_NAME }}
+      APP_VERSION: ${{ needs.version.outputs.APP_VERSION }}
+      URI: ${{ inputs.URI }}
+    secrets: inherit
 
   notification:
     needs: [ release_to_dev ]
