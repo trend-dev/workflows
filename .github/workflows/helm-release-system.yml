@@ -116,7 +116,7 @@ jobs:
       DOCKER_REGISTRY_PASSWORD: ${{ secrets.DOCKER_REGISTRY_PASSWORD }}
 
   jira_version:
-    needs: [ release_to_dev ]
+    needs: [ version, release_to_dev ]
     uses: trend-dev/workflows/.github/workflows/make-release-at-jira.yml@master
     with:
       APP_NAME: ${{ needs.version.outputs.APP_NAME }}
