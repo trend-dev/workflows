@@ -1,0 +1,135 @@
+name: Auto-create Jira Task from Labeled Issue
+
+on:
+  workflow_call:
+    inputs:
+      issue-repository-name:
+        required: true
+        type: string
+      issue-labels:
+        required: true
+        type: string
+      issue-user-email:
+        required: true
+        type: string
+      issue-title:
+        required: true
+        type: string
+      issue-number:
+        required: true
+        type: string
+    secrets:
+      JIRA_API_KEY:
+        required: true
+jobs:
+  create-jira-issue:
+    runs-on: [self-hosted, docker-runner]
+    steps:
+      - name: Get project code
+        id: get_project_code
+        run: |
+          echo "Repo name: ${{ inputs.issue-repository-name }}"
+          PROJECT_CODE=$(echo "${{ inputs.issue-repository-name }}" | awk -F '-' '{print $1}')
+          if [[ $PROJECT_CODE == "ta" ]]; then
+            PROJECT='TRA'
+          else
+            PROJECT='TRR'
+          fi
+          
+          echo "PROJECT=${PROJECT}" >> $GITHUB_ENV
+          echo "Project Code: ${PROJECT}"
+
+      - name: Fixation Jira issue type from labels
+        id: determine_issue_type
+        run: |
+          ISSUE_TYPE="Simple Task" 
+          
+          LABELS="${{ inputs.issue-labels }}"
+          echo "Issue labels: $LABELS"
+          
+          if [[ $LABELS == *"Tech Story"* ]]; then
+            ISSUE_TYPE="Tech Story"
+          elif [[ $LABELS == *"Task"* ]]; then
+            ISSUE_TYPE="Task for back-end developer"
+          elif [[ $LABELS == *"Bug"* ]]; then
+            ISSUE_TYPE="Prod Bug Web"
+          fi
+          
+          echo "ISSUE_TYPE=${ISSUE_TYPE}" >> $GITHUB_ENV
+          echo "Selected Jira issue type: ${ISSUE_TYPE}"    
+
+      - name: Create Jira issue
+        id: create_jira_issue
+        run: |
+          echo "Creating Jira issue"
+          
+          GITHUB_USER_EMAIL="${{ inputs.issue-user-email }}"
+          echo "GitHub User Email: $GITHUB_USER_EMAIL"
+          
+          ISSUE_JSON=$(cat <<EOF
+          {          
+            "fields": {
+              "project": {
+                "key": "${{ env.PROJECT }}"
+              },
+              "summary": "${{ inputs.issue-title }}",
+              "issuetype": {
+                "name": "${{ env.ISSUE_TYPE }}"
+              },
+              "components": [
+                  {
+                    "name": "${{ inputs.issue-repository-name }}"
+                  }
+              ],
+              "assignee": {
+                "emailAddress": "$GITHUB_USER_EMAIL"
+              }
+            }
+          }
+          EOF
+          )
+          
+          RESPONSE=$(curl --write-out "%{http_code}" --request POST \
+            --url "https://trend-it.atlassian.net/rest/api/3/issue/" \
+            --header "Authorization: Basic ${{ secrets.JIRA_API_KEY }}" \
+            --header "Content-Type: application/json" \
+            --data "$ISSUE_JSON" --silent --output /tmp/response_jira.json)
+          
+          HTTP_CODE=$(echo "$RESPONSE" | tail -n 1)
+          
+          RESPONSE_BODY=$(cat /tmp/response_jira.json)
+          echo "Jira Response Body: $RESPONSE_BODY"
+          
+          JIRA_ISSUE_KEY=$(echo "$RESPONSE_BODY" | jq -r '.key')
+          JIRA_BROWSER_URL="https://trend-it.atlassian.net/browse/$JIRA_ISSUE_KEY"
+          echo "JIRA_BROWSER_URL=$JIRA_BROWSER_URL" >> $GITHUB_ENV
+          
+          if [[ "$HTTP_CODE" -ge 200 && "$HTTP_CODE" -lt 300 ]]; then
+            echo "Jira issue created successfully with HTTP code $HTTP_CODE"
+          else
+            echo "Failed to create Jira issue. HTTP code: $HTTP_CODE"
+            exit 1
+          fi
+
+      - name: Update GitHub issue with Jira link
+        id: update_github
+        run: |
+          echo "Updating GitHub issue with Jira link"
+
+          COMMENT_BODY=$(cat <<EOF
+          Ссылка на задачу: ${{ env.JIRA_BROWSER_URL }}
+          EOF
+          )
+
+          ESCAPED_BODY=$(echo "$COMMENT_BODY" | jq -R -s '.')
+
+          RESPONSE=$(curl --request POST \
+            --url "https://api.github.com/repos/${{ github.repository }}/issues/${{ inputs.issue-number }}/comments" \
+            --header "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
+            --header "Accept: application/vnd.github.v3+json" \
+            --header "Content-Type: application/json" \
+            --data "{\"body\": $ESCAPED_BODY}" --silent --output /tmp/response_gh.json)
+
+          HTTP_CODE=$(echo "$RESPONSE" | tail -n 1)
+          RESPONSE_BODY=$(cat /tmp/response_gh.json)
+          echo "GH Response Body: $RESPONSE_BODY"
