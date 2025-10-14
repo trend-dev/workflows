@@ -18,7 +18,9 @@ on:
       issue-number:
         required: true
         type: string
-
+    secrets:
+      JIRA_API_KEY:
+        required: true
 jobs:
   create-jira-issue:
     runs-on: [self-hosted, docker-runner]
