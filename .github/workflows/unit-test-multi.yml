@@ -99,6 +99,10 @@ jobs:
       - id: sqlcortage
         run: echo "QUERY=$(paste -d ',' /tmp/timestampUT /tmp/servicesUT /tmp/versionUT /tmp/pctUT | sed 's/.*/(&)/' | sed 's/$/,/' | tr -d '\n' | sed 's/.$//')" >> $GITHUB_OUTPUT
 
+      - id: delete_temp_file
+        run: rm /tmp/modifiedPackagesUT
+        shell: bash
+
   Publish_to_db:
     name: publish_to_db
     runs-on: [ self-hosted, docker-runner ]
