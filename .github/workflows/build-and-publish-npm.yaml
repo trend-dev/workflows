@@ -16,6 +16,12 @@ jobs:
                   node-version: 20
                   registry-url: 'https://npm.pkg.github.com'
 
+            - name: Use Corepack
+              run: |
+                echo "corepack version => $(corepack --version)"
+                corepack enable
+                pnpm --version  
+
             - name: Install dependencies
               run: npm run setup
               env:

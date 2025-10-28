@@ -40,9 +40,6 @@ jobs:
         with:
           persist-credentials: false
 
-      - name: install pnpm
-        uses: pnpm/action-setup@v4
-
       - name: Setup node
         id: node_build
         uses: actions/setup-node@v4
@@ -54,6 +51,12 @@ jobs:
         env:
           NODE_AUTH_TOKEN: ${{ secrets.GPT_TOKEN }}
           CI: true
+
+      - name: Use Corepack
+        run: |
+          echo "corepack version => $(corepack --version)"
+          corepack enable
+          pnpm --version  
 
       - name: Get pnpm store directory
         shell: bash
