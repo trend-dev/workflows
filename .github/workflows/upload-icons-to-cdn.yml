@@ -35,6 +35,12 @@ jobs:
           node-version: 20
           registry-url: 'https://npm.pkg.github.com'
 
+      - name: Use Corepack
+        run: |
+          echo "corepack version => $(corepack --version)"
+          corepack enable
+          pnpm --version  
+
       - name: Configure Git
         run: |
           git config user.name "$GITHUB_ACTOR"
