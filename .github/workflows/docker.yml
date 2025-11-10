@@ -94,7 +94,7 @@ jobs:
 
       # Cache
       - name: Cache Docker layers
-        if: ${{ inputs.CACHE_ENABLED = 'true' }}
+        if: ${{ inputs.CACHE_ENABLED == 'true' }}
         uses: actions/cache@v4
         with:
           path: /tmp/.buildx-cache
@@ -132,7 +132,7 @@ jobs:
 
       # for parsers-modules
       - name: Build and push without cache
-        if: ${{ inputs.CACHE_ENABLED = 'false' }}
+        if: ${{ inputs.CACHE_ENABLED == 'false' }}
         uses: docker/build-push-action@v6
         with:
           context: ${{ inputs.CONTEXT }}
