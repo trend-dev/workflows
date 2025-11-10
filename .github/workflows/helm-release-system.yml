@@ -42,6 +42,10 @@ on:
       URI:
         type: string
         required: false
+      CACHE_ENABLED:
+        type: string
+        required: false
+        default: "true"
     secrets:
       DEV_KUBE_CONFIG:
         required: false
@@ -75,6 +79,7 @@ jobs:
       APP_VERSION: ${{ needs.version.outputs.APP_VERSION }}
       BUILD: ${{ inputs.BUILD }}
       DOCKERFILE: './tools/Dockerfile'
+      CACHE_ENABLED: ${{ inputs.CACHE_ENABLED }}
     secrets: inherit
 
   chart:
