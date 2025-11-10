@@ -37,6 +37,11 @@ on:
         type: string
         required: false
         default: ""
+      CACHE_ENABLED:
+        description: "Cache for docker"
+        type: string
+        required: false
+        default: "true"
     outputs:
       IMAGE:
         description: "Docker image name"
@@ -89,6 +94,7 @@ jobs:
 
       # Cache
       - name: Cache Docker layers
+        if: ${{ inputs.CACHE_ENABLED = 'true' }}
         uses: actions/cache@v4
         with:
           path: /tmp/.buildx-cache
@@ -108,8 +114,9 @@ jobs:
 
       # Build and push Docker image with Buildx (don't push on PR)
       # https://github.com/docker/build-push-action
-      - name: Build and push
-        uses: docker/build-push-action@v5
+      - name: Build and push with cache
+        if: ${{ inputs.CACHE_ENABLED = 'true' }}
+        uses: docker/build-push-action@v6
         with:
           context: ${{ inputs.CONTEXT }}
           file: ${{ inputs.DOCKERFILE }}
@@ -122,3 +129,19 @@ jobs:
           build-args: |
             "NPM_TOKEN=${{ secrets.GPT_TOKEN }}"
             ${{ inputs.EXTRA_BUILD_ARGS }}
+
+      # for parsers-modules
+      - name: Build and push without cache
+        if: ${{ inputs.CACHE_ENABLED = 'false' }}
+        uses: docker/build-push-action@v6
+        with:
+          context: ${{ inputs.CONTEXT }}
+          file: ${{ inputs.DOCKERFILE }}
+          push: 'true'
+          tags: |
+            ${{ inputs.DOCKER_REGISTRY }}/${{ inputs.APP_NAME }}:${{ github.sha }}
+            ${{ needs.variables.outputs.IMAGE }}
+          build-args: |
+            "NPM_TOKEN=${{ secrets.GPT_TOKEN }}"
+            ${{ inputs.EXTRA_BUILD_ARGS }}
+          no-cache: true
