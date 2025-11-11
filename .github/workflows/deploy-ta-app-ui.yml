@@ -54,7 +54,7 @@ env:
 
 jobs:
   release:
-    runs-on: [ self-hosted, docker-runner ]
+    runs-on: [  docker-runner ]
     permissions:
       contents: write
       packages: write
