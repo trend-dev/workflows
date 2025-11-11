@@ -11,7 +11,7 @@ on:
 
 jobs:
   update-jira-comment:
-    runs-on: [ self-hosted, docker-runner ]
+    runs-on:  [ docker-runner-new ]
 
     steps:
       - name: Checkout repository

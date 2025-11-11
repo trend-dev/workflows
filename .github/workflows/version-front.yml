@@ -20,7 +20,7 @@ jobs:
   parse:
     name: Get version
     runs-on: [ ubuntu-latest ]
-#    runs-on: [ self-hosted, docker-runner ]
+#    runs-on:  [ docker-runner-new ]
     # Map the job outputs to step outputs
     outputs:
       output1: ${{ steps.step1.outputs.name }}

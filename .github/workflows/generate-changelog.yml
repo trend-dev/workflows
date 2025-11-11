@@ -18,7 +18,7 @@ on:
 
 jobs:
   generate_changelog:
-    runs-on: [ self-hosted, docker-runner ]
+    runs-on:  [ docker-runner-new ]
     steps:
       - name: Checkout ${{ github.repository }}
         uses: actions/checkout@v4

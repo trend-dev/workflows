@@ -39,7 +39,7 @@ on:
 
 jobs:
   release:
-    runs-on: [ self-hosted, docker-runner ]
+    runs-on:  [ docker-runner-new ]
     environment:
       name: staging
       url: ${{ inputs.URI }}

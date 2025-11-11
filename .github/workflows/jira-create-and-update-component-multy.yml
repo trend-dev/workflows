@@ -18,7 +18,7 @@ on:
 
 jobs:
   update-jira-release:
-    runs-on: [ self-hosted, docker-runner ]
+    runs-on:  [ docker-runner-new ]
 
     steps:
       - name: Checkout repository

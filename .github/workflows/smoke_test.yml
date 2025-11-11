@@ -5,7 +5,7 @@ on:
 
 jobs:
   qa_test:
-    runs-on: [ self-hosted, docker-runner ]
+    runs-on:  [ docker-runner-new ]
     steps:
       - name: run tests on QA clusters
         uses: fjogeleit/http-request-action@v1

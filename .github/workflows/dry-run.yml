@@ -28,7 +28,7 @@ on:
 
 jobs:
   dry_run_chart:
-    runs-on: [ self-hosted, docker-runner ]
+    runs-on:  [ docker-runner-new ]
     steps:
 
       - name: Install Helm

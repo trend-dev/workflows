@@ -59,7 +59,7 @@ jobs:
 
   Publish_to_db:
     name: publish_to_db
-    runs-on: [ self-hosted, docker-runner ]
+    runs-on:  [ docker-runner-new ]
     needs: Run_unit_tests
     if: contains(${{github.base_ref}}, fromJSON('["main", "master", "release", "Release"]'))
     container:
