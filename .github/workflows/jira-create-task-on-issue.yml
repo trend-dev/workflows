@@ -23,7 +23,7 @@ on:
         required: true
 jobs:
   create-jira-issue:
-    runs-on: [self-hosted, docker-runner]
+    runs-on: [ docker-runner]
     steps:
       - name: Get project code
         id: get_project_code

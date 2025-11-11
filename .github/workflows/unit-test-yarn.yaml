@@ -16,7 +16,7 @@ on:
 jobs:
   parse:
     name: Parse arguments
-    runs-on: [ self-hosted, vm-runner ]
+    runs-on: [  vm-runner ]
     outputs:
       NAMES: ${{ steps.packagesName.outputs.NAMES }}
 
@@ -47,7 +47,7 @@ jobs:
 
   Run_unit_tests:
     name: Running autotests
-    runs-on: [ self-hosted, vm-runner ]
+    runs-on: [  vm-runner ]
     needs: [ parse ]
     outputs:
       QUERY: ${{ steps.sqlcortage.outputs.QUERY }}
@@ -105,7 +105,7 @@ jobs:
 
   Publish_to_db:
     name: publish_to_db
-    runs-on: [ self-hosted, docker-runner ]
+    runs-on: [  docker-runner ]
     needs: Run_unit_tests
     container:
       image: postgres

@@ -17,7 +17,7 @@ on:
 jobs:
   check_version:
     name: Check version on stage
-    runs-on: [ self-hosted, docker-runner ]
+    runs-on: [  docker-runner ]
     permissions:
       contents: read
       packages: write

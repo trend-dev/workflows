@@ -14,7 +14,7 @@ on:
 jobs:
   parse:
     name: Parse arguments
-    runs-on: [ self-hosted, vm-runner ]
+    runs-on: [  vm-runner ]
     outputs:
       NAMES: ${{ steps.packagesName.outputs.NAMES }}
 
@@ -45,7 +45,7 @@ jobs:
 
   publish_packages:
     name: Build and Publish packages
-    runs-on: [ self-hosted, vm-runner ]
+    runs-on: [  vm-runner ]
     needs: [ parse ]
     steps:
       - name: Checkout repository
