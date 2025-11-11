@@ -8,7 +8,7 @@ on:
 
 jobs:
     build:
-        runs-on: [self-hosted, docker-runner ]
+        runs-on:  [ docker-runner-new ]
         steps:
             - uses: actions/checkout@v4
             - uses: actions/setup-node@v4
