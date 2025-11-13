@@ -80,6 +80,12 @@ jobs:
 #          path: ./node_modules
 #          key: ${{ runner.os }}-node-${{ hashFiles('**/yarn.lock') }}
 
+      - name: Use Corepack
+        run: |
+          echo "corepack version => $(corepack --version)"
+          corepack enable
+          pnpm --version  
+
       - name: Install dependencies
         env:
           NODE_AUTH_TOKEN: ${{ secrets.GPT_TOKEN }}
