@@ -70,6 +70,12 @@ jobs:
           token: ${{ secrets.GPT_TOKEN }}
           registry-url: 'https://npm.pkg.github.com'
 
+      - name: Use Corepack
+        run: |
+          echo "corepack version => $(corepack --version)"
+          corepack enable
+          pnpm --version  
+
       - uses: actions/cache@v4
         id: cache
         with:

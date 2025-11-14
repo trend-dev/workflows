@@ -39,6 +39,12 @@ jobs:
           NODE_AUTH_TOKEN: ${{ secrets.GPT_TOKEN }}
           CI: true
 
+      - name: Use Corepack
+        run: |
+          echo "corepack version => $(corepack --version)"
+          corepack enable
+          pnpm --version  
+
       - name: Install dependencies
         env:
           NODE_AUTH_TOKEN: ${{ secrets.GPT_TOKEN }}
