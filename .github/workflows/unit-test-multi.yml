@@ -16,7 +16,7 @@ on:
 jobs:
   parse:
     name: Parse arguments
-    runs-on: [  vm-runner ]
+    runs-on: [  vm-runner, cnf ]
     outputs:
       NAMES: ${{ steps.packagesName.outputs.NAMES }}
 
@@ -47,7 +47,7 @@ jobs:
 
   Run_unit_tests:
     name: Running autotests
-    runs-on: [  vm-runner ]
+    runs-on: [  vm-runner, cnf ]
     needs: [ parse ]
     outputs:
       QUERY: ${{ steps.sqlcortage.outputs.QUERY }}
