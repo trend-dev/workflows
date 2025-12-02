@@ -103,57 +103,7 @@ jobs:
             # exit 1
           fi
 
-      - name: Set fix version at JIRA issue
-        id: set_jira_fix_versions
-        if: github.event.pull_request.merged == true
-        run: |
-          PROJECT=$(echo "${GITHUB_HEAD_REF}" | grep -oE '[A-Z]+')
-          
-          echo "Set Jira fix versions ${{ env.APP_NAME }}@${{ env.APP_VERSION }}. Project ${PROJECT}"
-          
-          UPDATE=$(cat <<EOF
-          {
-            "fields": {
-              "customfield_10410": {
-                "type": "doc",
-                "version": 1,
-                "content": [
-                  {
-                    "type": "bulletList",
-                    "content": [
-                      {
-                        "type": "listItem",
-                        "content": [
-                          {
-                            "type": "paragraph",
-                            "content": [
-                              {
-                                "type": "text",
-                                "text": "${{ env.APP_NAME }}@${{ env.APP_VERSION }}"
-                              }
-                            ]
-                          }
-                        ]
-                      }
-                    ]
-                  }
-                ]
-              }
-            }
-          }
-          EOF
-          )
-
-          echo "${UPDATE}"
-          
-          curl --silent \
-            --request PUT \
-            --url "https://trend-it.atlassian.net/rest/api/3/issue/${{ env.jira_issue_id }}" \
-            --header "Authorization: Basic ${{ secrets.JIRA_API_KEY }}" \
-            --header "Content-Type: application/json" \
-            --data "$UPDATE"
-
-      - name: Adding ENV to comment
+      - name: Adding ENV link to comment
         if: ${{ env.jira_issue_id != '' }}
         id: adding_environment
         run: |
@@ -211,6 +161,57 @@ jobs:
                     {
                       "type": "text",
                       "text": "${{steps.sha_commit.outputs.sha_commit}}"
+                    }
+                  ]
+                }
+              ]
+            }
+          }
+          EOF
+          )
+
+          echo "${COMMENT_JSON}"
+
+          curl --silent \
+            --request POST \
+            --url "https://trend-it.atlassian.net/rest/api/3/issue/${{ env.jira_issue_id }}/comment" \
+            --header "Authorization: Basic ${{ secrets.JIRA_API_KEY }}" \
+            --header "Content-Type: application/json" \
+            --header 'Accept: application/json' \
+            --data "$COMMENT_JSON"
+
+      - name: Comment fix version at release
+        id: set_jira_fix_versions
+        if: github.event.pull_request.merged == true
+        run: |
+          echo "Updating Jira issue ${{ env.jira_issue_id }} with fix version"
+
+          COMMENT_JSON=$(cat <<EOF
+          {
+            "body": {
+              "type": "doc",
+              "version": 1,
+              "content": [
+                {
+                  "type": "paragraph",
+                  "content": [
+                    {
+                      "type": "text",
+                      "text": "Component fix version",
+                      "marks": [
+                        {
+                          "type": "strong"
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "type": "paragraph",
+                  "content": [
+                    {
+                      "type": "text",
+                      "text": "${{env.APP_NAME}}@{{env.APP_VERSION}}"
                     }
                   ]
                 }
