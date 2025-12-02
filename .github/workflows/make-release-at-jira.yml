@@ -119,11 +119,21 @@ jobs:
                 "version": 1,
                 "content": [
                   {
-                    "type": "paragraph",
+                    "type": "bulletList",
                     "content": [
                       {
-                        "type": "text",
-                        "text": "${{ env.APP_NAME }}@${{ env.APP_VERSION }}"
+                        "type": "listItem",
+                        "content": [
+                          {
+                            "type": "paragraph",
+                            "content": [
+                              {
+                                "type": "text",
+                                "text": "${{ env.APP_NAME }}@${{ env.APP_VERSION }}"
+                              }
+                            ]
+                          }
+                        ]
                       }
                     ]
                   }
