@@ -1,4 +1,4 @@
-name: Make release at JIRA
+name: Create release at JIRA
 on:
   workflow_call:
     inputs:

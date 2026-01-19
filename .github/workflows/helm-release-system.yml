@@ -122,7 +122,7 @@ jobs:
 
   jira_version:
     needs: [ version, release_to_dev ]
-    uses: trend-dev/workflows/.github/workflows/make-release-at-jira.yml@develop
+    uses: trend-dev/workflows/.github/workflows/jira-create-release.yml@develop
     with:
       APP_NAME: ${{ needs.version.outputs.APP_NAME }}
       APP_VERSION: ${{ needs.version.outputs.APP_VERSION }}
