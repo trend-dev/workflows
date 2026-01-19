@@ -126,8 +126,9 @@ jobs:
             ${{ needs.variables.outputs.IMAGE }}
           cache-from: type=local,src=/tmp/.buildx-cache
           cache-to: type=local,dest=/tmp/.buildx-cache,mode=max
+          secrets: |
+            NPM_TOKEN=${{ secrets.NPM_PACKAGES_READ }}
           build-args: |
-            "NPM_TOKEN=${{ secrets.NPM_PACKAGES_READ }}"
             ${{ inputs.EXTRA_BUILD_ARGS }}
 
       # for parsers-modules
