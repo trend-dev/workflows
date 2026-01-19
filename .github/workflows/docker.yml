@@ -127,7 +127,7 @@ jobs:
           cache-from: type=local,src=/tmp/.buildx-cache
           cache-to: type=local,dest=/tmp/.buildx-cache,mode=max
           secrets: |
-            NPM_TOKEN=${{ secrets.NPM_PACKAGES_READ }}
+            GIT_AUTH_TOKEN=${{ secrets.NPM_PACKAGES_READ }}
           build-args: |
             ${{ inputs.EXTRA_BUILD_ARGS }}
 
@@ -142,7 +142,8 @@ jobs:
           tags: |
             ${{ inputs.DOCKER_REGISTRY }}/${{ inputs.APP_NAME }}:${{ github.sha }}
             ${{ needs.variables.outputs.IMAGE }}
+          secrets: |
+            GIT_AUTH_TOKEN=${{ secrets.NPM_PACKAGES_READ }}
           build-args: |
-            "NPM_TOKEN=${{ secrets.NPM_PACKAGES_READ }}"
             ${{ inputs.EXTRA_BUILD_ARGS }}
           no-cache: true
