@@ -235,6 +235,9 @@ jobs:
         id: add_git_tag
         if: github.event.pull_request.merged == true
         run: |
+          git config --local user.email "action@trend.tech"
+          git config --local user.name "TrendTech GitHub Action"
+
           git tag -a ${{env.APP_VERSION}} -m "Release ${{env.APP_VERSION}}"
           git push origin ${{env.APP_VERSION}}
 
