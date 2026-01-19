@@ -118,7 +118,6 @@ jobs:
         if: ${{ inputs.CACHE_ENABLED == 'true' }}
         uses: docker/build-push-action@v6
         with:
-          platforms: linux/amd64,linux/arm64
           context: ${{ inputs.CONTEXT }}
           file: ${{ inputs.DOCKERFILE }}
           push: 'true'
@@ -137,7 +136,6 @@ jobs:
         if: ${{ inputs.CACHE_ENABLED == 'false' }}
         uses: docker/build-push-action@v6
         with:
-          platforms: linux/amd64,linux/arm64
           context: ${{ inputs.CONTEXT }}
           file: ${{ inputs.DOCKERFILE }}
           push: 'true'
