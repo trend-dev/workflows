@@ -127,7 +127,7 @@ jobs:
           cache-from: type=local,src=/tmp/.buildx-cache
           cache-to: type=local,dest=/tmp/.buildx-cache,mode=max
           build-args: |
-            "NPM_TOKEN=${{ secrets.GPT_TOKEN }}"
+            "NPM_TOKEN=${{ secrets.NPM_PACKAGES_READ }}"
             ${{ inputs.EXTRA_BUILD_ARGS }}
 
       # for parsers-modules
@@ -142,6 +142,6 @@ jobs:
             ${{ inputs.DOCKER_REGISTRY }}/${{ inputs.APP_NAME }}:${{ github.sha }}
             ${{ needs.variables.outputs.IMAGE }}
           build-args: |
-            "NPM_TOKEN=${{ secrets.GPT_TOKEN }}"
+            "NPM_TOKEN=${{ secrets.NPM_PACKAGES_READ }}"
             ${{ inputs.EXTRA_BUILD_ARGS }}
           no-cache: true

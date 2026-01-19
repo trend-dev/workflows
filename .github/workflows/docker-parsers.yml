@@ -99,4 +99,4 @@ jobs:
             ${{ inputs.DOCKER_REGISTRY }}/${{ inputs.APP_NAME }}:${{ github.sha }}
             ${{ needs.variables.outputs.IMAGE }}
           build-args: |
-            "NPM_TOKEN=${{ secrets.GPT_TOKEN }}"
+            "NPM_TOKEN=${{ secrets.NPM_PACKAGES_READ }}"

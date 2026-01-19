@@ -75,4 +75,4 @@ jobs:
           cache-from: type=local,src=/tmp/.buildx-cache
           cache-to: type=local,dest=/tmp/.buildx-cache-new,mode=max
           build-args: |
-            "NPM_TOKEN=${{ secrets.GPT_TOKEN }}"
+            "NPM_TOKEN=${{ secrets.NPM_PACKAGES_READ }}"
