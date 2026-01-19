@@ -231,6 +231,13 @@ jobs:
             --header 'Accept: application/json' \
             --data "$COMMENT_JSON"
 
+      - name: Add git tag
+        id: add_git_tag
+        if: github.event.pull_request.merged == true
+        run: |
+          git tag -a ${{env.APP_VERSION}} -m "Release ${{env.APP_VERSION}}"
+          git push origin ${{env.APP_VERSION}}
+
     env:
       APP_VERSION: ${{ inputs.APP_VERSION }}
       APP_NAME: ${{ inputs.APP_NAME }}
