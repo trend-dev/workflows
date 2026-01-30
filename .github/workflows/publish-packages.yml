@@ -83,7 +83,7 @@ jobs:
         run: npm run setup
 
       - name: Build
-        run: nx run-many --target=build:ignore-scripts --projects=${{ needs.parse.outputs.NAMES }} --parallel=false
+        run: nx run-many --target=build --projects=${{ needs.parse.outputs.NAMES }} --parallel=false
 
       - name: Publish
         env:
