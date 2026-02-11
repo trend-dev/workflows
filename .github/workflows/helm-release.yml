@@ -75,7 +75,7 @@ jobs:
           echo ${{ secrets.TR_PROD_KUBE_CONFIG }} | base64 -d > ~/.kube/config
 
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
           repository: trend-dev/${{ inputs.APP_SYSTEM }}
           ref: ${{ inputs.LOCATION }}
