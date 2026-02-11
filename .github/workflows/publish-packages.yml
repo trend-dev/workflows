@@ -23,7 +23,7 @@ jobs:
         uses: dcarbone/install-jq-action@v2.1.0
 
       - name: Checkout main branch
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
           repository: ${{ github.repository }}
           fetch-depth: 0
@@ -49,7 +49,7 @@ jobs:
     needs: [ parse ]
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
           repository: ${{ github.repository }}
           fetch-depth: 0

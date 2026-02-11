@@ -27,7 +27,7 @@ jobs:
       output2: ${{ steps.step2.outputs.version }}
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
       - id: step1
         run: echo "name=$(awk -F "\"" '/canonical-name/{print $4; exit}' ${{ inputs.PACKAGE_JSON_FILE }})" >> $GITHUB_OUTPUT
       - id: step2
