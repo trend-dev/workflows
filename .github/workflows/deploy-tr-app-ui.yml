@@ -66,7 +66,7 @@ jobs:
       customEnvironment: ${{ steps.getBranchName.outputs.branchName }}
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
           repository: trend-dev/${{ inputs.APP_NAME }}
           fetch-depth: 0

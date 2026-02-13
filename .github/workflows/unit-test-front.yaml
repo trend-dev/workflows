@@ -23,7 +23,7 @@ jobs:
       PERCENT: ${{ steps.percent.outputs.PERCENT }}
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: 'Setup jq'
         uses: dcarbone/install-jq-action@v1.0.1

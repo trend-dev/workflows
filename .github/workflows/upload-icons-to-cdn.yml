@@ -26,7 +26,7 @@ jobs:
   build:
     runs-on: [  docker-runner ]
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
         with:
           token: ${{ secrets.TOKEN }}
 
@@ -52,10 +52,12 @@ jobs:
       - name: Generate typification
         run: npm run generate-icons-type
 
-      - name: install AWS cli
-        run: |
-          sudo apt update && sudo apt install awscli -y
-        shell: bash
+      - name: Install AWS-CLI
+        uses: unfor19/install-aws-cli-action@master
+        with:
+          version: 2
+          verbose: false
+          arch: amd64
 
       - run: aws --endpoint-url='https://s3.ru-1.storage.selcloud.ru' s3 sync icons/svg s3://ta_modules/icons/svg/
         shell: bash

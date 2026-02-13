@@ -63,17 +63,17 @@ on:
 jobs:
   version:
     if: github.event.inputs.LOCATION || github.event.pull_request.merged == true
-    uses: trend-dev/workflows/.github/workflows/version.yml@master
+    uses: trend-dev/workflows/.github/workflows/version.yml@v1
 
   test:
     if: inputs.TEST == 'true' && github.event.pull_request.merged == true
     needs: version
-    uses: trend-dev/workflows/.github/workflows/unit-test.yaml@master
+    uses: trend-dev/workflows/.github/workflows/unit-test.yaml@v1
     secrets: inherit
 
   docker:
     needs: [ version ]
-    uses: trend-dev/workflows/.github/workflows/docker.yml@develop
+    uses: trend-dev/workflows/.github/workflows/docker.yml@v1
     with:
       APP_NAME: ${{ needs.version.outputs.APP_NAME }}
       APP_VERSION: ${{ needs.version.outputs.APP_VERSION }}
@@ -84,7 +84,7 @@ jobs:
 
   chart:
     needs: [ version ]
-    uses: trend-dev/workflows/.github/workflows/chart.yml@master
+    uses: trend-dev/workflows/.github/workflows/chart.yml@v1
     with:
       APP_NAME: ${{ needs.version.outputs.APP_NAME }}
       APP_VERSION: '${{ needs.version.outputs.APP_VERSION }}-${{ github.sha }}'
@@ -94,7 +94,7 @@ jobs:
   dry_run:
     if: inputs.DRY_RUN == 'true'
     needs: [ version, chart ]
-    uses: trend-dev/workflows/.github/workflows/dry-run.yml@master
+    uses: trend-dev/workflows/.github/workflows/dry-run.yml@v1
     with:
       APP_NAME: ${{ needs.version.outputs.APP_NAME }}
       APP_VERSION: '${{ needs.version.outputs.APP_VERSION }}-${{ github.sha }}'
@@ -107,7 +107,7 @@ jobs:
   release_to_dev:
     needs: [ version, docker, chart ]
     if: always() && !cancelled() && !failure() && inputs.DRY_RUN != 'true'
-    uses: trend-dev/workflows/.github/workflows/helm-release.yml@master
+    uses: trend-dev/workflows/.github/workflows/helm-release.yml@v1
     with:
       URI: ${{ inputs.URI }}
       APP_NAME: ${{ needs.version.outputs.APP_NAME }}
@@ -122,7 +122,7 @@ jobs:
 
   jira_version:
     needs: [ version, release_to_dev ]
-    uses: trend-dev/workflows/.github/workflows/jira-create-release.yml@develop
+    uses: trend-dev/workflows/.github/workflows/jira-create-release.yml@v1
     with:
       APP_NAME: ${{ needs.version.outputs.APP_NAME }}
       APP_VERSION: ${{ needs.version.outputs.APP_VERSION }}
@@ -131,6 +131,6 @@ jobs:
 
   notification:
     needs: [ release_to_dev ]
-    uses: trend-dev/workflows/.github/workflows/notification.yml@master
+    uses: trend-dev/workflows/.github/workflows/notification.yml@v1
     secrets:
       SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK_TA_DEPLOY_CHANNEL }}

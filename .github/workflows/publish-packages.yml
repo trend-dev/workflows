@@ -23,7 +23,7 @@ jobs:
         uses: dcarbone/install-jq-action@v2.1.0
 
       - name: Checkout main branch
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
           repository: ${{ github.repository }}
           fetch-depth: 0
@@ -49,7 +49,7 @@ jobs:
     needs: [ parse ]
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
           repository: ${{ github.repository }}
           fetch-depth: 0
@@ -83,7 +83,7 @@ jobs:
         run: npm run setup
 
       - name: Build
-        run: nx run-many --target=build:ignore-scripts --projects=${{ needs.parse.outputs.NAMES }} --parallel=false
+        run: nx run-many --target=build --projects=${{ needs.parse.outputs.NAMES }} --parallel=false
 
       - name: Publish
         env:
