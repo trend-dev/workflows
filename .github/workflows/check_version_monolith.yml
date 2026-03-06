@@ -23,7 +23,7 @@ jobs:
       packages: write
     steps:
       - uses: actions/checkout@v6
-        if: ${{ github.event.inputs.LOCATION == 'stage' && github.ref != 'refs/heads/main' && inputs.CHECK_VERSIONS == 'true' }} }}
+        if: ${{ github.event.inputs.LOCATION == 'stage' && github.ref != 'refs/heads/main' && inputs.CHECK_VERSIONS == 'true' }}
         with:
           persist-credentials: false
 
