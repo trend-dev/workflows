@@ -20,6 +20,7 @@ env:
   APP_LOCAL_PATH: './dist/${{ inputs.appName }}'
   APP_REMOTE_PATH: '/platform-modules/apps'
   CI_CDN_PUBLIC_HOST: 'https://platform-modules.trendagent.ru'
+  BUILD_ID: '${{ github.run_number }}'
   # TA Platform AWS auth
   AWS_ACCESS_KEY_ID: ${{ secrets.AWS_TA_PLATFORM_ACCESS_KEY_ID }}
   AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_TA_PLATFORM_SECRET_ACCESS_KEY }}
@@ -29,7 +30,7 @@ env:
 jobs:
   build_and_deploy:
     name: Build and deploy to CDN
-    runs-on: [  docker-runner-front ]
+    runs-on: [ docker-runner-front ]
     permissions:
       contents: read
       packages: write
@@ -41,7 +42,7 @@ jobs:
 
       - name: Setup node
         id: node_build
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v6
         with:
           node-version: 20
           registry-url: 'https://npm.pkg.github.com'
@@ -61,13 +62,13 @@ jobs:
         run: |
           echo "STORE_PATH=$(pnpm store path --silent)" >> $GITHUB_ENV
 
-      - uses: actions/cache@v4
-        name: Setup pnpm cache
-        with:
-          path: ${{ env.STORE_PATH }}
-          key: ${{ runner.os }}-pnpm-store-${{ hashFiles('**/pnpm-lock.yaml') }}
-          restore-keys: |
-            ${{ runner.os }}-pnpm-store-
+#      - uses: actions/cache@v4
+#        name: Setup pnpm cache
+#        with:
+#          path: ${{ env.STORE_PATH }}
+#          key: ${{ runner.os }}-pnpm-store-${{ hashFiles('**/pnpm-lock.yaml') }}
+#          restore-keys: |
+#            ${{ runner.os }}-pnpm-store-
 
       - name: Install dependencies
         run: pnpm i
@@ -88,5 +89,7 @@ jobs:
         uses: unfor19/install-aws-cli-action@master
         with:
           version: 2
-      - run: aws --endpoint-url=https://s3.selcdn.ru s3 cp '${{ env.APP_LOCAL_PATH }}' s3:/${{ env.APP_REMOTE_PATH }}/${{ steps.branchName.outputs.branchName }}/${{ env.APP_NAME }} --recursive
+      - run: |
+          aws --endpoint-url=https://s3.ru-1.storage.selcloud.ru s3 cp '${{ env.APP_LOCAL_PATH }}' \
+          s3:/${{ env.APP_REMOTE_PATH }}/${{ steps.branchName.outputs.branchName }}/${{ env.APP_NAME }}/${{ env.BUILD_ID }} --recursive
         shell: bash
