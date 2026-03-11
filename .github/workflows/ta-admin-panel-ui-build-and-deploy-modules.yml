@@ -26,6 +26,7 @@ env:
   AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_TA_PLATFORM_SECRET_ACCESS_KEY }}
   AWS_DEFAULT_REGION: ${{ secrets.CI_AWS_REGION }}
   REQUESTS_CA_BUNDLE: "/etc/ssl/certs/ca-certificates.crt"
+  AWS_ENDPOINT: 'https://s3.ru-1.storage.selcloud.ru'
 
 jobs:
   build_and_deploy:
@@ -90,6 +91,6 @@ jobs:
         with:
           version: 2
       - run: |
-          aws --endpoint-url=https://s3.ru-1.storage.selcloud.ru s3 cp '${{ env.APP_LOCAL_PATH }}' \
+          aws --endpoint-url=${{ env.AWS_ENDPOINT }} s3 cp '${{ env.APP_LOCAL_PATH }}' \
           s3:/${{ env.APP_REMOTE_PATH }}/${{ steps.branchName.outputs.branchName }}/${{ env.APP_NAME }}/${{ env.BUILD_ID }} --recursive
         shell: bash

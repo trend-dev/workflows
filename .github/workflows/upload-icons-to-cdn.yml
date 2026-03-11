@@ -21,6 +21,7 @@ env:
   AWS_DEFAULT_REGION: '${{ secrets.AWS_DEFAULT_REGION }}'
   REQUESTS_CA_BUNDLE: "/etc/ssl/certs/ca-certificates.crt"
   NODE_AUTH_TOKEN: ${{ secrets.NODE_AUTH_TOKEN }}
+  AWS_ENDPOINT: 'https://s3.ru-1.storage.selcloud.ru'
 
 jobs:
   build:
@@ -30,7 +31,7 @@ jobs:
         with:
           token: ${{ secrets.TOKEN }}
 
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v6
         with:
           node-version: 20
           registry-url: 'https://npm.pkg.github.com'
@@ -59,7 +60,7 @@ jobs:
           verbose: false
           arch: amd64
 
-      - run: aws --endpoint-url='https://s3.ru-1.storage.selcloud.ru' s3 sync icons/svg s3://ta_modules/icons/svg/
+      - run: aws --endpoint-url=${{ env.AWS_ENDPOINT }} s3 sync icons/svg s3://ta_modules/icons/svg/
         shell: bash
 
       - name: Publish npm
