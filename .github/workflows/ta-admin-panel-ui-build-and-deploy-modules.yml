@@ -86,11 +86,20 @@ jobs:
       - id: branchName
         run: echo "branchName=$(echo ${{ steps.getBranchName.outputs.branchName || inputs.namespace }})" >> $GITHUB_OUTPUT
 
+#      - name: Upload to CDN
+#        uses: unfor19/install-aws-cli-action@master
+#        with:
+#          version: 2
+#      - run: |
+#          aws --endpoint-url=${{ env.AWS_ENDPOINT }} s3 cp '${{ env.APP_LOCAL_PATH }}' \
+#          s3:/${{ env.APP_REMOTE_PATH }}/${{ steps.branchName.outputs.branchName }}/${{ env.APP_NAME }}/${{ env.BUILD_ID }} --recursive
+#        shell: bash
+
       - name: Upload to CDN
         uses: unfor19/install-aws-cli-action@master
         with:
           version: 2
       - run: |
           aws --endpoint-url=${{ env.AWS_ENDPOINT }} s3 cp '${{ env.APP_LOCAL_PATH }}' \
-          s3:/${{ env.APP_REMOTE_PATH }}/${{ steps.branchName.outputs.branchName }}/${{ env.APP_NAME }}/${{ env.BUILD_ID }} --recursive
+          s3:/${{ env.APP_REMOTE_PATH }}/${{ steps.branchName.outputs.branchName }}/${{ env.APP_NAME }} --recursive
         shell: bash
