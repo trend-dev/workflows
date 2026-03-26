@@ -64,7 +64,7 @@ jobs:
 
       - name: Setup node
         id: node_build
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v6
         with:
           node-version: '${{ inputs.NODE_VERSION }}'
           registry-url: 'https://npm.pkg.github.com'

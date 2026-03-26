@@ -30,7 +30,7 @@ jobs:
       - name: Setup node
         if: ${{ github.event.inputs.LOCATION == 'stage' && github.ref != 'refs/heads/main' && inputs.CHECK_VERSIONS == 'true' }}
         id: node_build
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v6
         # Используется для установки из приватного npm-регистра
         with:
           node-version: 20
