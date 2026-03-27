@@ -2,6 +2,10 @@ name: Upload icons to CDN and publish npm
 
 on:
   workflow_call:
+    inputs:
+      BRANCH:
+        required: true
+        type: string
     secrets:
       TOKEN:
         required: true
@@ -63,11 +67,24 @@ jobs:
       - run: aws --endpoint-url=${{ env.AWS_ENDPOINT }} s3 sync icons/svg s3://ta_modules/icons/svg/
         shell: bash
 
+      - name: Bump version
+        if: contains(inputs.BRANCH, 'export-from-figma')
+        run: |
+          npm version minor --no-git-tag-version
+
       - name: Publish npm
         run: npm publish
 
-      - name: push generated types
+      - name: push generated types from figma
+        if: contains(inputs.BRANCH, 'export-from-figma')
         run: |
-          git add src/components/Icon/types.ts 
-          git commit -m 'types.ts has been updated' src/components/Icon/types.ts 
+          git add src/components/Icon/types.ts package.json
+          git commit -m 'types.ts has been updated and version has been bumped' src/components/Icon/types.ts package.json
+          git push https://github.com/${{ github.repository }} ${{ github.ref_name }} --force
+
+      - name: push generated types
+        if: "!contains(inputs.BRANCH, 'export-from-figma')"
+        run: |
+          git add src/components/Icon/types.ts package.json
+          git commit -m 'types.ts has been updated' src/components/Icon/types.ts package.json
           git push https://github.com/${{ github.repository }} ${{ github.ref_name }} --force
