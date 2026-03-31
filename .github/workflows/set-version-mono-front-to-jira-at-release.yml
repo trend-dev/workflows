@@ -24,8 +24,18 @@ jobs:
         id: get_project_code
         run: |
           echo "Repo name: ${{ github.event.repository.name }}"
-          PROJECT_CODE=$(echo "${{ github.event.repository.name }}" | awk -F '-' '{print $1}')
-          if [[ $PROJECT_CODE == "ta" ]]; then
+          REPO_NAME="${{ github.event.repository.name }}"
+          PROJECT_CODE=$(echo "$REPO_NAME" | awk -F '-' '{print $1}')
+          
+          if [[ "$REPO_NAME" == "chats-ui" ]]; then
+            BRANCH="${{ github.ref }}"
+            if [[ "$BRANCH" == */tra-* ]]; then
+              PROJECT='TRA'
+            else
+              echo "Branch '$BRANCH' не входит в TRA проект"
+              exit 0
+            fi
+          elif [[ $PROJECT_CODE == "ta" ]]; then
             PROJECT='TRA'
           elif [[ $PROJECT_CODE == "crm" ]]; then
             PROJECT='CRM'

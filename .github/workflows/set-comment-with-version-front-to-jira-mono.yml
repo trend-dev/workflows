@@ -2,39 +2,40 @@ name: Set version to JIRA
 on:
   workflow_call:
     inputs:
+      APP_VERSION:
+        description: "Application version"
+        required: true
+        type: string
       APP_NAME:
         description: "Application name"
         required: true
         type: string
-      PACKAGE_NAME:
-        type: string
-        required: true
-      APP_DESTINATION:
-        type: string
-        required: true
     secrets:
       JIRA_API_KEY:
         required: true
 
 jobs:
   update-jira:
-    runs-on: [  docker-runner ]
+    runs-on: [ docker-runner ]
 
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v6
-
-      - name: Get package version
-        id: package_version
-        run: |
-          echo "PACKAGE_VERSION=$(awk -F "\"" '/version/{print $4; exit}' ${{ env.PACKAGE_FILE }})" >> $GITHUB_ENV
 
       - name: Get project code
         id: get_project_code
         run: |
           echo "Repo name: ${{ github.event.repository.name }}"
-          PROJECT_CODE=$(echo "${{ github.event.repository.name }}" | awk -F '-' '{print $1}')
-          if [[ $PROJECT_CODE == "ta" ]]; then
+          REPO_NAME="${{ github.event.repository.name }}"
+          PROJECT_CODE=$(echo "$REPO_NAME" | awk -F '-' '{print $1}')
+          
+          if [[ "$REPO_NAME" == "chats-ui" ]]; then
+            BRANCH="${{ github.ref }}"
+            if [[ "$BRANCH" == */crm-* ]]; then
+              PROJECT='CRM'
+            else
+              echo "Branch '$BRANCH' не входит в CRM проект"
+              exit 0
+            fi
+          elif [[ $PROJECT_CODE == "ta" ]]; then
             PROJECT='TRA'
           elif [[ $PROJECT_CODE == "crm" ]]; then
             PROJECT='CRM'
@@ -53,11 +54,10 @@ jobs:
           echo "Issue ID: ${ISSUE_ID}"
           echo "jira_issue_id=${ISSUE_ID}" >> $GITHUB_ENV
 
-
       - name: Set comment to JIRA with fix version
         id: set_jira_fix_versions
         run: |
-          echo "Link Jira issue ${{ env.jira_issue_id }} with version ${{ env.APP_NAME }}/${{ inputs.PACKAGE_NAME }}-${{ env.PACKAGE_VERSION }}"
+          echo "Link Jira issue ${{ env.jira_issue_id }} with version ${{ env.APP_NAME }}/$${{ env.APP_VERSION }}"
 
           COMMENT_JSON=$(cat <<EOF
           {
@@ -84,7 +84,7 @@ jobs:
                   "content": [
                     {
                       "type": "text",
-                      "text": "${{ env.APP_NAME }}/${{ inputs.PACKAGE_NAME }}-${{ env.PACKAGE_VERSION }}"
+                      "text": "${{ env.APP_NAME }}/${{ env.APP_VERSION }}"
                     }
                   ]
                 }
@@ -105,5 +105,5 @@ jobs:
             --data "$COMMENT_JSON"
 
     env:
-      PACKAGE_FILE: ${{ inputs.APP_DESTINATION }}/${{ inputs.PACKAGE_NAME }}/package.json
+      APP_VERSION: ${{ inputs.APP_VERSION }}
       APP_NAME: ${{ inputs.APP_NAME }}
