@@ -57,7 +57,8 @@ on:
 jobs:
   variables:
     name: Prepare variables
-    runs-on: [  docker-runner ]
+#    runs-on: [  docker-runner ]
+    runs-on: [  ubuntu-latest ]
     outputs:
       IMAGE: ${{ steps.image.outputs.NAME }}
       BUILD: ${{ steps.build.outputs.BUILD }}
