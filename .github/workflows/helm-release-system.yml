@@ -45,7 +45,7 @@ on:
       CACHE_ENABLED:
         type: string
         required: false
-        default: "true"
+        default: "false"
     secrets:
       DEV_KUBE_CONFIG:
         required: false
