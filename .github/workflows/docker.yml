@@ -4,47 +4,48 @@ on:
   workflow_call:
     inputs:
       APP_NAME:
+        description: 'Application name'
         type: string
         required: true
       APP_VERSION:
+        description: 'Application version'
         type: string
         required: true
       BUILD:
-        description: "Actual boolean flag to make build docker image, BUT BEWARE IT IS PASSING AS STRING"
+        description: 'Boolean flag to build Docker image (passed as string)'
         type: string
         required: false
-        default: true
+        default: 'true'
       DOCKERFILE:
-        description: "Dockerfile path relative to context"
+        description: 'Dockerfile path relative to context'
         type: string
         required: false
-        default: "./tools/Dockerfile"
+        default: './tools/Dockerfile'
       CONTEXT:
-        description: "Context for dockerfile"
+        description: 'Build context for Dockerfile'
         type: string
         required: false
-        default: "."
+        default: '.'
       DOCKER_REGISTRY:
-        description: "Docker registry to push image"
+        description: 'Docker registry URL'
         type: string
         required: false
-        default: "docker-registry.trendagent.ru:5000"
+        default: 'docker-registry.trendagent.ru:5000'
       EXTRA_BUILD_ARGS:
         description: |
-          Дополнительные build-arg в формате
-          KEY1=VAL1
-          KEY2=VAL2
+          Additional build-args in KEY=VALUE format,
+          one per line
         type: string
         required: false
-        default: ""
+        default: ''
       CACHE_ENABLED:
-        description: "Cache for docker"
+        description: 'Enable Docker layer caching'
         type: string
         required: false
-        default: "true"
+        default: 'true'
     outputs:
       IMAGE:
-        description: "Docker image name"
+        description: 'Full Docker image name with tag'
         value: ${{ jobs.variables.outputs.IMAGE }}
     secrets:
       DOCKER_REGISTRY_USER:
@@ -56,34 +57,36 @@ on:
 
 jobs:
   variables:
-    name: Prepare variables
+    name: 'Prepare variables'
     runs-on: docker-runner
     outputs:
       IMAGE: ${{ steps.image.outputs.NAME }}
       BUILD: ${{ steps.build.outputs.BUILD }}
     steps:
       - id: image
-        run: echo "NAME=${{ inputs.DOCKER_REGISTRY }}/${{ inputs.APP_NAME }}:${{ inputs.APP_VERSION }}-${{ github.sha }}" >> $GITHUB_OUTPUT
+        run: |
+          echo "NAME=${{ inputs.DOCKER_REGISTRY }}/${{ inputs.APP_NAME }}:${{ inputs.APP_VERSION }}-${{ github.sha }}" >> $GITHUB_OUTPUT
       - id: build
-        run: echo "BUILD=${{ inputs.BUILD == '' && 'true' || inputs.BUILD }}" >> $GITHUB_OUTPUT
+        run: |
+          echo "BUILD=${{ inputs.BUILD == '' && 'true' || inputs.BUILD }}" >> $GITHUB_OUTPUT
 
   build:
+    name: 'Build & push Docker image'
     if: needs.variables.outputs.BUILD == 'true'
-    name: Build & push docker image
     runs-on: docker-runner
     needs: variables
     steps:
-      - name: Checkout repository
+      - name: 'Checkout code'
         uses: actions/checkout@v6
 
-      - name: Set up Docker Buildx
+      - name: 'Setup Docker Buildx'
         id: buildx
-        uses: docker/setup-buildx-action@v4
+        uses: docker/setup-buildx-action@v6
         with:
           version: latest
       # Cache
-      - name: Cache Docker layers
-        if: inputs.CACHE_ENABLED == 'true'
+      - name: 'Cache Docker layers'
+        if: ${{ inputs.CACHE_ENABLED == 'true' }}
         uses: actions/cache@v5
         with:
           path: /tmp/.buildx-cache
@@ -93,7 +96,8 @@ jobs:
 
       # Login against a Docker registry except on PR
       # https://github.com/docker/login-action
-      - name: Log into Docker registry
+      - name: 'Login to Docker registry'
+        if: ${{ inputs.CACHE_ENABLED == 'true' || inputs.CACHE_ENABLED == 'false' }}
         uses: docker/login-action@v4
         with:
           registry: ${{ inputs.DOCKER_REGISTRY }}
@@ -102,8 +106,8 @@ jobs:
 
       # Build and push Docker image with Buildx (don't push on PR)
       # https://github.com/docker/build-push-action
-      - name: Build and push Docker image
-        if: inputs.CACHE_ENABLED == 'true'
+      - name: 'Build & push with cache'
+        if: ${{ inputs.CACHE_ENABLED == 'true' }}
         uses: docker/build-push-action@v7
         with:
           context: ${{ inputs.CONTEXT }}
@@ -118,9 +122,8 @@ jobs:
             NPM_TOKEN=${{ secrets.NPM_PACKAGES_READ }}
             ${{ inputs.EXTRA_BUILD_ARGS }}
 
-      # for parsers-modules
-      - name: Build without cache
-        if: inputs.CACHE_ENABLED == 'false'
+      - name: 'Build & push without cache'
+        if: ${{ inputs.CACHE_ENABLED == 'false' }}
         uses: docker/build-push-action@v7
         with:
           context: ${{ inputs.CONTEXT }}
