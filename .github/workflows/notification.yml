@@ -2,6 +2,13 @@ name: Notification
 
 on:
   workflow_call:
+    inputs:
+      APP_NAME:
+        type: string
+        required: false
+      APP_VERSION:
+        type: string
+        required: false
     secrets:
       SLACK_WEBHOOK:
         required: true
@@ -22,10 +29,12 @@ jobs:
           ENVIRONMENT: ${{ github.event.inputs.location || 'stage' }}
           BRANCH: ${{ env.GITHUB_REF_SLUG }}
           USER: ${{ github.actor }}
+          APP_NAME: ${{ inputs.APP_NAME }}
+          VERSION: ${{ inputs.APP_VERSION }}
         run: |
           PAYLOAD=$(cat <<EOF
           {
-            "message": "Пользователь: $USER\nОкружение: $ENVIRONMENT\nВетка: $BRANCH\n"
+            "message": "Пользователь: $USER\nОкружение: $ENVIRONMENT\nПриложение: $APP_NAME\nВерсия: $VERSION\nВетка: $BRANCH\n"
           }
           EOF
           )
@@ -47,8 +56,8 @@ jobs:
           SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
           STATUS: ${{ job.status }}
           ENVIRONMENT: ${{ github.event.inputs.location }}
-          APP_NAME: ${{ github.event.inputs.APP_NAME }}
-          VERSION: ${{ github.event.inputs.APP_VERSION }}
+          APP_NAME: ${{ inputs.APP_NAME }}
+          VERSION: ${{ inputs.APP_VERSION }}
           USER: ${{ github.actor }}
         run: |
           PAYLOAD=$(cat <<EOF
