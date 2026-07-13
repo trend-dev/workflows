@@ -19,15 +19,13 @@ jobs:
       - name: Notify Pachca
         env:
           SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
-          STATUS: ${{ job.status }}
           ENVIRONMENT: ${{ github.event.inputs.location || 'stage' }}
           BRANCH: ${{ env.GITHUB_REF_SLUG }}
-          APP_NAME: ${{ github.event.inputs.APP_NAME }}
-          VERSION: ${{ github.event.inputs.APP_VERSION }}
+          USER: ${{ github.actor }}
         run: |
           PAYLOAD=$(cat <<EOF
           {
-            "message": "Окружение: $ENVIRONMENT\nПриложение: $APP_NAME\nВерсия: $VERSION\nВетка: $BRANCH\nСтатус: $STATUS"
+            "message": "Пользователь: $USER\nОкружение: $ENVIRONMENT\nВетка: $BRANCH\n"
           }
           EOF
           )
@@ -51,10 +49,11 @@ jobs:
           ENVIRONMENT: ${{ github.event.inputs.location }}
           APP_NAME: ${{ github.event.inputs.APP_NAME }}
           VERSION: ${{ github.event.inputs.APP_VERSION }}
+          USER: ${{ github.actor }}
         run: |
           PAYLOAD=$(cat <<EOF
           {
-            "message": "Окружение: $ENVIRONMENT\nПриложение: $APP_NAME\nВерсия: $VERSION\nСтатус: $STATUS"
+            "message": "Пользователь: $USER\nОкружение: $ENVIRONMENT\nПриложение: $APP_NAME\nВерсия: $VERSION\nСтатус: $STATUS"
           }
           EOF
           )
