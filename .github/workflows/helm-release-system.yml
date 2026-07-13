@@ -131,6 +131,6 @@ jobs:
 
   notification:
     needs: [ release_to_dev ]
-    uses: trend-dev/workflows/.github/workflows/notification.yml@master
+    uses: trend-dev/workflows/.github/workflows/notification.yml@pachca
     secrets:
-      SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK_TA_DEPLOY_CHANNEL }}
+      SLACK_WEBHOOK: ${{ secrets.PACHCA_WEBHOOK_TA_DEPLOY_CHANNEL }}
