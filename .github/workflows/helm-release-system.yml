@@ -130,7 +130,7 @@ jobs:
     secrets: inherit
 
   notification:
-    needs: [ release_to_dev ]
+    needs: [ version, release_to_dev ]
     uses: trend-dev/workflows/.github/workflows/notification.yml@pachca
     with:
       APP_NAME: ${{ needs.version.outputs.APP_NAME }}
