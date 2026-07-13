@@ -7,9 +7,9 @@ on:
         required: true
 
 jobs:
-  slackNotification:
+  pachcaotification:
     if: ${{ github.event.inputs.location != 'ta-production' }}
-    name: Slack Notification
+    name: Pachca Notification
     runs-on: [ docker-runner ]
     steps:
       - uses: actions/checkout@v7
@@ -35,9 +35,9 @@ jobs:
           curl -X POST -H 'Content-Type: application/json' -d "$PAYLOAD" "$SLACK_WEBHOOK"
 
 
-  slackNotificationPro:
+  pachcaNotificationPro:
     if: ${{ github.event.inputs.location == 'ta-production' }}
-    name: Slack Notification
+    name: Pachca Notification
     runs-on: [ docker-runner ]
     steps:
       - uses: actions/checkout@v7
