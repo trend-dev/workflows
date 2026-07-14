@@ -9,6 +9,9 @@ on:
       APP_VERSION:
         type: string
         required: false
+      ENVIRONMENT:
+        type: string
+        required: false
     secrets:
       SLACK_WEBHOOK:
         required: true
@@ -55,14 +58,12 @@ jobs:
         env:
           SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
           STATUS: ${{ job.status }}
-          ENVIRONMENT: ${{ github.event.inputs.location }}
-          APP_NAME: ${{ github.event.inputs.APP_NAME }}
-          VERSION: ${{ github.event.inputs.APP_VERSION }}
+          ENVIRONMENT: "${{ inputs.ENVIRONMENT }}"
           USER: ${{ github.actor }}
         run: |
           PAYLOAD=$(cat <<EOF
           {
-            "message": "Пользователь: $USER\nОкружение: $ENVIRONMENT\nПриложение: $APP_NAME\nВерсия: $VERSION\nСтатус: $STATUS"
+            "message": "Пользователь: $USER\nОкружение: $ENVIRONMENT\nСтатус: $STATUS"
           }
           EOF
           )
