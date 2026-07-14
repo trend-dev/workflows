@@ -17,7 +17,7 @@ on:
         required: true
 
 jobs:
-  pachcaotification:
+  pachcaNotification:
     if: ${{ github.event.inputs.location != 'ta-production' }}
     name: Pachca Notification
     runs-on: [ docker-runner ]
