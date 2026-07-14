@@ -9,7 +9,7 @@ on:
       APP_VERSION:
         type: string
         required: false
-      ENVIRONMENT:
+      LOCATION:
         type: string
         required: false
     secrets:
@@ -46,7 +46,7 @@ jobs:
 
 
   pachcaNotificationPro:
-    if: ${{ github.event.inputs.location == 'ta-production' }}
+    if: ${{ github.event.inputs.LOCATION == 'ta-production' }}
     name: Pachca Notification
     runs-on: [ docker-runner ]
     steps:
@@ -58,7 +58,7 @@ jobs:
         env:
           SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
           STATUS: ${{ job.status }}
-          ENVIRONMENT: "${{ inputs.ENVIRONMENT }}"
+          ENVIRONMENT: "${{ inputs.LOCATION }}"
           USER: ${{ github.actor }}
         run: |
           PAYLOAD=$(cat <<EOF
