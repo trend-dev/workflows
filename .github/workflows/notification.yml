@@ -17,6 +17,32 @@ on:
         required: true
 
 jobs:
+
+  pachcaNotificationPro:
+    if: ${{ inputs.LOCATION == 'ta-production' }}
+    name: Pachca Notification
+    runs-on: [ docker-runner ]
+    steps:
+      - uses: actions/checkout@v7
+      - name: Inject slug/short variables
+        uses: rlespinasse/github-slug-action@v5
+
+      - name: Notify Pachca production
+        env:
+          SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
+          STATUS: ${{ job.status }}
+          ENVIRONMENT: "${{ inputs.LOCATION }}"
+          USER: ${{ github.actor }}
+        run: |
+          PAYLOAD=$(cat <<EOF
+          {
+            "message": "Пользователь: $USER\nОкружение: $ENVIRONMENT\nСтатус: $STATUS"
+          }
+          EOF
+          )
+
+          curl -X POST -H 'Content-Type: application/json' -d "$PAYLOAD" "$SLACK_WEBHOOK"
+
   pachcaNotification:
     if: ${{ github.event.inputs.location != 'ta-production' }}
     name: Pachca Notification
@@ -38,32 +64,6 @@ jobs:
           PAYLOAD=$(cat <<EOF
           {
             "message": "Пользователь: $USER\nОкружение: $ENVIRONMENT\nПриложение: $APP_NAME\nВерсия: $VERSION\nВетка: $BRANCH\n"
-          }
-          EOF
-          )
-          
-          curl -X POST -H 'Content-Type: application/json' -d "$PAYLOAD" "$SLACK_WEBHOOK"
-
-
-  pachcaNotificationPro:
-    if: ${{ github.event.inputs.LOCATION == 'ta-production' }}
-    name: Pachca Notification
-    runs-on: [ docker-runner ]
-    steps:
-      - uses: actions/checkout@v7
-      - name: Inject slug/short variables
-        uses: rlespinasse/github-slug-action@v5
-
-      - name: Notify Pachca production
-        env:
-          SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
-          STATUS: ${{ job.status }}
-          ENVIRONMENT: "${{ inputs.LOCATION }}"
-          USER: ${{ github.actor }}
-        run: |
-          PAYLOAD=$(cat <<EOF
-          {
-            "message": "Пользователь: $USER\nОкружение: $ENVIRONMENT\nСтатус: $STATUS"
           }
           EOF
           )
