@@ -1,4 +1,5 @@
 name: lighthouse perf budget
+run-name: Generate LH report from [${{ github.head_ref || github.ref_name }}] branch
 
 on:
     workflow_call:
