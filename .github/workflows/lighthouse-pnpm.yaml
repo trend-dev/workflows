@@ -37,7 +37,7 @@ jobs:
                   PR: ${{ github.event.pull_request.number }}
                   PATTERN: ${{ inputs.CHANGED_PATHS }}
               run: |
-                  curl -s -H "Authorization: Bearer $GH_TOKEN" "https://api.github.com/repos/$REPO/pulls/$PR/files?per_page=100" > /tmp/pr-files.json
+                  curl -fsSL -H "Authorization: Bearer $GH_TOKEN" "https://api.github.com/repos/$REPO/pulls/$PR/files?per_page=100" > /tmp/pr-files.json || { echo "run=true" >> "$GITHUB_OUTPUT"; echo "Не удалось получить список файлов PR из GitHub API, запускаю аудит по умолчанию." >> "$GITHUB_STEP_SUMMARY"; exit 0; }
                   grep -oE '"filename": *"[^"]+"' /tmp/pr-files.json | sed 's/.*: *"//; s/"$//' > /tmp/pr-files.txt
                   cat /tmp/pr-files.txt
                   COUNT=$(wc -l < /tmp/pr-files.txt)
@@ -72,7 +72,7 @@ jobs:
               id: cache
               with:
                   path: ./node_modules
-                  key: ${{ runner.os }}-node-${{ hashFiles('**/pnpm-lock.yaml') }}
+                  key: ${{ runner.os }}-node-${{ inputs.NODE_VERSION }}-${{ hashFiles('**/pnpm-lock.yaml') }}
 
             - name: Install dependencies
               if: steps.changes.outputs.run == 'true' && steps.cache.outputs.cache-hit != 'true'
@@ -87,15 +87,19 @@ jobs:
             - name: Change apt mirror
               if: steps.changes.outputs.run == 'true'
               run: |
-                  sudo sed -i 's|http://archive.ubuntu.com/ubuntu|http://mirror.yandex.ru/ubuntu|g' /etc/apt/sources.list.d/ubuntu.sources
-                  sudo sed -i 's|http://security.ubuntu.com/ubuntu|http://mirror.yandex.ru/ubuntu|g' /etc/apt/sources.list.d/ubuntu.sources
+                  if [ -f /etc/apt/sources.list.d/ubuntu.sources ]; then
+                      sudo sed -i 's|http://archive.ubuntu.com/ubuntu|http://mirror.yandex.ru/ubuntu|g' /etc/apt/sources.list.d/ubuntu.sources
+                      sudo sed -i 's|http://security.ubuntu.com/ubuntu|http://mirror.yandex.ru/ubuntu|g' /etc/apt/sources.list.d/ubuntu.sources
+                  else
+                      echo "ubuntu.sources не найден, пропускаю смену apt-зеркала" >> "$GITHUB_STEP_SUMMARY"
+                  fi
 
             - name: Install Chromium
               if: steps.changes.outputs.run == 'true'
               run: |
                   npx --yes playwright@1.61.1 install --with-deps chromium
                   CHROME=$(find $HOME/.cache/ms-playwright -type f -name chrome -path '*chrome-linux*' | sort -V | tail -1)
-                  "$CHROME" --version
+                  if [ -n "$CHROME" ]; then "$CHROME" --version; fi
 
             - name: Resolve Chrome path
               if: steps.changes.outputs.run == 'true'
