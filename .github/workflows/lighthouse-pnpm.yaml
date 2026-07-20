@@ -9,6 +9,12 @@ on:
             RUNNER:
                 type: string
                 default: 'docker-runner-front'
+            INSTALL_COMMAND:
+                type: string
+                default: 'pnpm run setup'
+            BUILD_COMMAND:
+                type: string
+                default: 'pnpm run build'
             CHANGED_PATHS:
                 type: string
                 default: '^(src/|config/|index\.html|vite\.config\.mts|lighthouserc\.js|pnpm-lock\.yaml|\.github/workflows/lighthouse\.yml)'
@@ -72,11 +78,11 @@ jobs:
               if: steps.changes.outputs.run == 'true' && steps.cache.outputs.cache-hit != 'true'
               env:
                   NODE_AUTH_TOKEN: ${{ secrets.GPT_TOKEN }}
-              run: pnpm run setup
+              run: ${{ inputs.INSTALL_COMMAND }}
 
             - name: Build
-              if: steps.changes.outputs.run == 'true'
-              run: pnpm run build
+              if: steps.changes.outputs.run == 'true' && inputs.BUILD_COMMAND != ''
+              run: ${{ inputs.BUILD_COMMAND }}
 
             - name: Change apt mirror
               if: steps.changes.outputs.run == 'true'
