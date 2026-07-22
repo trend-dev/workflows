@@ -18,11 +18,11 @@ on:
 
 jobs:
   update-jira:
-    runs-on: [  docker-runner ]
+    runs-on: [ docker-runner ]
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
 
       - name: Get package version
         id: package_version
